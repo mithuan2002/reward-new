@@ -100,10 +100,41 @@ Currently implements in-memory storage (`MemStorage`) with sample data initializ
 - **Auto-deployment**: Configured for autoscale deployment target
 - **Port Mapping**: Internal port 5000 mapped to external port 80
 
+## Recent Changes
+
+**June 16, 2025** - Added customer management system:
+- New customers database table with name, phone, email fields
+- Customer API endpoints for CRUD operations and bulk CSV import
+- Customers tab in admin dashboard with manual entry form
+- CSV import functionality with duplicate handling
+- Customer search and management interface
+- Updated dashboard stats to include customer count
+
+## Architecture Updates
+
+### Database Schema
+Added `customers` table:
+```typescript
+customers: { id, name, phone (unique), email, createdAt }
+```
+
+### API Endpoints
+- `GET /api/customers` - List all customers
+- `POST /api/customers` - Create single customer
+- `POST /api/customers/bulk` - Bulk import from CSV
+- `PUT /api/customers/:id` - Update customer
+- `DELETE /api/customers/:id` - Delete customer
+
+### Frontend Features
+- Customer management tab with form and CSV upload
+- Search functionality across customer database
+- Automatic duplicate prevention by phone number
+- Clear CSV format instructions for users
+
 ## Changelog
 
 Changelog:
-- June 16, 2025. Initial setup
+- June 16, 2025. Initial setup with customer management system
 
 ## User Preferences
 
