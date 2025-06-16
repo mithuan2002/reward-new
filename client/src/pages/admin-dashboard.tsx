@@ -61,8 +61,9 @@ type DashboardStats = {
 };
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<"dashboard" | "campaigns" | "submissions">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "campaigns" | "submissions" | "customers">("dashboard");
   const [showCampaignForm, setShowCampaignForm] = useState(false);
+  const [showCustomerForm, setShowCustomerForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCampaign, setSelectedCampaign] = useState<string>("all");
   const { toast } = useToast();
@@ -78,6 +79,10 @@ export default function AdminDashboard() {
 
   const { data: submissions = [] } = useQuery<Submission[]>({
     queryKey: ["/api/submissions"],
+  });
+
+  const { data: customers = [] } = useQuery<any[]>({
+    queryKey: ["/api/customers"],
   });
 
   // Mutations
@@ -117,6 +122,39 @@ export default function AdminDashboard() {
     },
   });
 
+  const createCustomerMutation = useMutation({
+    mutationFn: (data: any) => apiRequest("POST", "/api/customers", data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+      setShowCustomerForm(false);
+      toast({ title: "Customer added successfully!" });
+    },
+    onError: (error: Error) => {
+      toast({ 
+        title: "Error adding customer", 
+        description: error.message,
+        variant: "destructive" 
+      });
+    },
+  });
+
+  const bulkImportCustomersMutation = useMutation({
+    mutationFn: (data: any) => apiRequest("POST", "/api/customers/bulk", data),
+    onSuccess: (response: any) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/customers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/stats"] });
+      toast({ title: response.message });
+    },
+    onError: (error: Error) => {
+      toast({ 
+        title: "Error importing customers", 
+        description: error.message,
+        variant: "destructive" 
+      });
+    },
+  });
+
   const handleCampaignSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -131,6 +169,53 @@ export default function AdminDashboard() {
     };
 
     createCampaignMutation.mutate(campaignData);
+  };
+
+  const handleCustomerSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    
+    const customerData = {
+      name: formData.get("name") as string,
+      phone: formData.get("phone") as string,
+      email: formData.get("email") as string || undefined,
+    };
+
+    createCustomerMutation.mutate(customerData);
+  };
+
+  const handleCSVImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const text = await file.text();
+    const lines = text.split('\n').filter(line => line.trim());
+    const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+    
+    const customers = lines.slice(1).map(line => {
+      const values = line.split(',').map(v => v.trim());
+      const customer: any = {};
+      
+      headers.forEach((header, index) => {
+        if (header === 'name') customer.name = values[index];
+        if (header === 'phone') customer.phone = values[index];
+        if (header === 'email') customer.email = values[index];
+      });
+      
+      return customer;
+    }).filter(customer => customer.name && customer.phone);
+
+    if (customers.length === 0) {
+      toast({ 
+        title: "No valid customers found", 
+        description: "Please check your CSV format",
+        variant: "destructive" 
+      });
+      return;
+    }
+
+    bulkImportCustomersMutation.mutate({ customers });
+    e.target.value = '';
   };
 
   const copyToClipboard = (text: string) => {
@@ -613,6 +698,239 @@ export default function AdminDashboard() {
                 {filteredSubmissions.length === 0 && (
                   <div className="text-center py-8">
                     <p className="text-slate-500">No submissions found matching your criteria.</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Customers Tab */}
+        {activeTab === "customers" && (
+          <div>
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h1 className="text-3xl font-bold text-slate-900 mb-2">Customer Management</h1>
+                <p className="text-slate-600">Manage your customer contact database</p>
+              </div>
+              <div className="flex items-center space-x-3">
+                <div className="relative">
+                  <input
+                    type="file"
+                    accept=".csv"
+                    onChange={handleCSVImport}
+                    className="hidden"
+                    id="csv-upload"
+                  />
+                  <Button
+                    onClick={() => document.getElementById('csv-upload')?.click()}
+                    variant="outline"
+                    disabled={bulkImportCustomersMutation.isPending}
+                  >
+                    <Download size={16} className="mr-2" />
+                    {bulkImportCustomersMutation.isPending ? "Importing..." : "Import CSV"}
+                  </Button>
+                </div>
+                <Button 
+                  onClick={() => setShowCustomerForm(!showCustomerForm)}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  <UserPlus size={16} className="mr-2" />
+                  Add Customer
+                </Button>
+              </div>
+            </div>
+
+            {/* Customer Creation Form */}
+            {showCustomerForm && (
+              <Card className="mb-8">
+                <CardHeader>
+                  <CardTitle>Add New Customer</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleCustomerSubmit}>
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                      <div>
+                        <Label htmlFor="customer-name">Full Name</Label>
+                        <Input
+                          id="customer-name"
+                          name="name"
+                          placeholder="e.g., John Smith"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="customer-phone">Phone Number</Label>
+                        <Input
+                          id="customer-phone"
+                          name="phone"
+                          type="tel"
+                          placeholder="e.g., +1 (555) 123-4567"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="customer-email">Email (Optional)</Label>
+                        <Input
+                          id="customer-email"
+                          name="email"
+                          type="email"
+                          placeholder="e.g., john@email.com"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex justify-end space-x-4 mt-6">
+                      <Button 
+                        type="button" 
+                        variant="outline"
+                        onClick={() => setShowCustomerForm(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button 
+                        type="submit" 
+                        className="bg-blue-600 hover:bg-blue-700"
+                        disabled={createCustomerMutation.isPending}
+                      >
+                        {createCustomerMutation.isPending ? "Adding..." : "Add Customer"}
+                      </Button>
+                    </div>
+                  </form>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* CSV Import Instructions */}
+            <Card className="mb-8 bg-blue-50 border-blue-200">
+              <CardContent className="p-6">
+                <div className="flex items-start space-x-3">
+                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <Download className="text-blue-600" size={16} />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-blue-900 mb-2">CSV Import Format</h3>
+                    <p className="text-blue-700 text-sm mb-3">
+                      Your CSV file should have the following columns: <strong>name, phone, email</strong>
+                    </p>
+                    <div className="bg-white rounded border border-blue-200 p-3 text-xs font-mono">
+                      <div className="text-blue-600">name,phone,email</div>
+                      <div className="text-slate-600">John Smith,+1 (555) 123-4567,john@email.com</div>
+                      <div className="text-slate-600">Jane Doe,+1 (555) 987-6543,jane@email.com</div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Customers List */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Customer Database ({customers.length})</CardTitle>
+                  <div className="flex items-center space-x-4">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={16} />
+                      <Input
+                        placeholder="Search customers..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-9 w-64"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-slate-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                          Customer
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                          Contact Info
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                          Added Date
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-slate-200">
+                      {customers
+                        .filter(customer => 
+                          customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          customer.phone.includes(searchTerm) ||
+                          (customer.email && customer.email.toLowerCase().includes(searchTerm.toLowerCase()))
+                        )
+                        .map((customer) => (
+                        <tr key={customer.id} className="hover:bg-slate-50">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div className="w-10 h-10 brand-gradient rounded-full flex items-center justify-center text-white font-medium text-sm">
+                                {customer.name.split(' ').map((n: string) => n[0]).join('')}
+                              </div>
+                              <div className="ml-4">
+                                <div className="text-sm font-medium text-slate-900">
+                                  {customer.name}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-slate-900">{customer.phone}</div>
+                            {customer.email && (
+                              <div className="text-sm text-slate-500">{customer.email}</div>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                            {customer.createdAt ? (
+                              <>
+                                {format(new Date(customer.createdAt), "MMM d, yyyy")}
+                                <br />
+                                <span className="text-xs">
+                                  {format(new Date(customer.createdAt), "h:mm a")}
+                                </span>
+                              </>
+                            ) : (
+                              "Just now"
+                            )}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div className="flex items-center space-x-2">
+                              <Button size="sm" variant="ghost">
+                                <Edit size={16} />
+                              </Button>
+                              <Button size="sm" variant="ghost" className="text-red-500 hover:text-red-700">
+                                <Trash2 size={16} />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                
+                {customers.length === 0 && (
+                  <div className="text-center py-8">
+                    <UserPlus className="mx-auto h-12 w-12 text-slate-400" />
+                    <h3 className="mt-2 text-sm font-medium text-slate-900">No customers yet</h3>
+                    <p className="mt-1 text-sm text-slate-500">
+                      Get started by adding a customer manually or importing a CSV file.
+                    </p>
+                    <div className="mt-6">
+                      <Button
+                        onClick={() => setShowCustomerForm(true)}
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        <UserPlus size={16} className="mr-2" />
+                        Add Your First Customer
+                      </Button>
+                    </div>
                   </div>
                 )}
               </CardContent>

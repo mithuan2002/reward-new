@@ -293,6 +293,7 @@ export class MemStorage implements IStorage {
     const customer: Customer = {
       ...insertCustomer,
       id,
+      email: insertCustomer.email || null,
       createdAt: new Date(),
     };
     this.customers.set(id, customer);

@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertCampaignSchema, insertSubmissionSchema } from "@shared/schema";
+import { insertCampaignSchema, insertSubmissionSchema, insertCustomerSchema } from "@shared/schema";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -230,16 +230,106 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Customer routes
+  app.get("/api/customers", async (req, res) => {
+    try {
+      const customers = await storage.getCustomers();
+      res.json(customers);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch customers" });
+    }
+  });
+
+  app.post("/api/customers", async (req, res) => {
+    try {
+      const validatedData = insertCustomerSchema.parse(req.body);
+      
+      // Check if customer with this phone already exists
+      const existingCustomer = await storage.getCustomerByPhone(validatedData.phone);
+      if (existingCustomer) {
+        return res.status(409).json({ message: "Customer with this phone number already exists" });
+      }
+      
+      const customer = await storage.createCustomer(validatedData);
+      res.status(201).json(customer);
+    } catch (error) {
+      if (error instanceof Error) {
+        res.status(400).json({ message: error.message });
+      } else {
+        res.status(500).json({ message: "Failed to create customer" });
+      }
+    }
+  });
+
+  app.post("/api/customers/bulk", async (req, res) => {
+    try {
+      const { customers } = req.body;
+      
+      if (!Array.isArray(customers) || customers.length === 0) {
+        return res.status(400).json({ message: "Customers array is required" });
+      }
+
+      // Validate each customer record
+      const validatedCustomers = customers.map(customer => insertCustomerSchema.parse(customer));
+      
+      const createdCustomers = await storage.createCustomersBulk(validatedCustomers);
+      res.status(201).json({ 
+        message: `Successfully processed ${createdCustomers.length} customers`,
+        customers: createdCustomers 
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        res.status(400).json({ message: error.message });
+      } else {
+        res.status(500).json({ message: "Failed to create customers in bulk" });
+      }
+    }
+  });
+
+  app.put("/api/customers/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = insertCustomerSchema.partial().parse(req.body);
+      
+      const customer = await storage.updateCustomer(id, updates);
+      if (!customer) {
+        return res.status(404).json({ message: "Customer not found" });
+      }
+      res.json(customer);
+    } catch (error) {
+      if (error instanceof Error) {
+        res.status(400).json({ message: error.message });
+      } else {
+        res.status(500).json({ message: "Failed to update customer" });
+      }
+    }
+  });
+
+  app.delete("/api/customers/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const deleted = await storage.deleteCustomer(id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Customer not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete customer" });
+    }
+  });
+
   // Dashboard stats
   app.get("/api/dashboard/stats", async (req, res) => {
     try {
       const campaigns = await storage.getCampaigns();
       const submissions = await storage.getSubmissions();
+      const customers = await storage.getCustomers();
       
       const stats = {
         totalCampaigns: campaigns.length,
         activeCampaigns: campaigns.filter(c => c.status === "active").length,
         totalSubmissions: submissions.length,
+        totalCustomers: customers.length,
         avgEngagement: 73, // This could be calculated based on actual data
       };
       

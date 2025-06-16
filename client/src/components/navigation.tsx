@@ -1,8 +1,8 @@
-import { Gift, BarChart3, BellRing, Users } from "lucide-react";
+import { Gift, BarChart3, BellRing, Users, UserPlus } from "lucide-react";
 
 interface NavigationProps {
-  activeTab: "dashboard" | "campaigns" | "submissions";
-  onTabChange: (tab: "dashboard" | "campaigns" | "submissions") => void;
+  activeTab: "dashboard" | "campaigns" | "submissions" | "customers";
+  onTabChange: (tab: "dashboard" | "campaigns" | "submissions" | "customers") => void;
 }
 
 export default function Navigation({ activeTab, onTabChange }: NavigationProps) {
@@ -10,6 +10,7 @@ export default function Navigation({ activeTab, onTabChange }: NavigationProps) 
     { id: "dashboard" as const, label: "Dashboard", icon: BarChart3 },
     { id: "campaigns" as const, label: "Campaigns", icon: BellRing },
     { id: "submissions" as const, label: "Submissions", icon: Users },
+    { id: "customers" as const, label: "Customers", icon: UserPlus },
   ];
 
   return (
