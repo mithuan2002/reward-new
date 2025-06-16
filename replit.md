@@ -53,7 +53,7 @@ submissions: { id, campaignId, customerName, phone, imageUrl, status }
 - **404 Page** - Error handling for invalid routes
 
 ### Storage Strategy
-Currently implements in-memory storage (`MemStorage`) with sample data initialization. The interface (`IStorage`) is designed to easily swap to database-backed storage using Drizzle ORM.
+Implements PostgreSQL database storage (`DatabaseStorage`) using Drizzle ORM with type-safe queries. Database automatically handles data persistence, relationships, and transactions.
 
 ## Data Flow
 
@@ -102,13 +102,15 @@ Currently implements in-memory storage (`MemStorage`) with sample data initializ
 
 ## Recent Changes
 
-**June 16, 2025** - Added customer management system:
+**June 16, 2025** - Added customer management system and PostgreSQL database:
+- Migrated from in-memory storage to PostgreSQL database using Drizzle ORM
 - New customers database table with name, phone, email fields
 - Customer API endpoints for CRUD operations and bulk CSV import
 - Customers tab in admin dashboard with manual entry form
 - CSV import functionality with duplicate handling
 - Customer search and management interface
 - Updated dashboard stats to include customer count
+- All data now persists in PostgreSQL for production reliability
 
 ## Architecture Updates
 
