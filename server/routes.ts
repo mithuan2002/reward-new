@@ -350,33 +350,89 @@ export async function registerRoutes(app: Express): Promise<Server> {
         `🔗 Participate now: ${campaignUrl}\n\n` +
         `Upload your photo and claim your reward today!`;
 
-      // Log the message details (In production, you'd integrate with SMS service like Twilio)
       console.log(`Bulk message prepared for ${customers.length} customers:`);
       console.log(`Campaign: ${campaignName}`);
       console.log(`Message: ${messageContent}`);
       
-      // Simulate sending messages to customers
+      // Check if Twilio credentials are configured
+      const twilioAccountSid = process.env.TWILIO_ACCOUNT_SID;
+      const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN;
+      const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
+
+      if (!twilioAccountSid || !twilioAuthToken || !twilioPhoneNumber) {
+        console.log("Twilio credentials not configured - simulating SMS send");
+        
+        // Simulate sending messages to customers
+        const messagePromises = customers.map(async (customer) => {
+          console.log(`Simulating SMS to ${customer.name} (${customer.phone})`);
+          await new Promise(resolve => setTimeout(resolve, 100));
+          
+          return {
+            customerId: customer.id,
+            customerName: customer.name,
+            phone: customer.phone,
+            status: "simulated"
+          };
+        });
+
+        const messageResults = await Promise.all(messagePromises);
+        
+        return res.json({
+          message: `SMS simulation completed for ${messageResults.length} customers. Configure Twilio credentials to send real SMS.`,
+          messagesSent: messageResults.length,
+          totalCustomers: customers.length,
+          campaignName,
+          messageContent,
+          results: messageResults,
+          note: "To send real SMS, add TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_PHONE_NUMBER to your environment variables"
+        });
+      }
+
+      // Initialize Twilio client
+      const twilio = require('twilio');
+      const client = twilio(twilioAccountSid, twilioAuthToken);
+      
+      // Send real SMS messages to customers
       const messagePromises = customers.map(async (customer) => {
-        // In production, replace this with actual SMS/messaging service
-        console.log(`Sending message to ${customer.name} (${customer.phone})`);
-        
-        // Simulate API call delay
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        return {
-          customerId: customer.id,
-          customerName: customer.name,
-          phone: customer.phone,
-          status: "sent"
-        };
+        try {
+          console.log(`Sending SMS to ${customer.name} (${customer.phone})`);
+          
+          const message = await client.messages.create({
+            body: messageContent,
+            from: twilioPhoneNumber,
+            to: customer.phone
+          });
+          
+          console.log(`SMS sent successfully to ${customer.phone}, SID: ${message.sid}`);
+          
+          return {
+            customerId: customer.id,
+            customerName: customer.name,
+            phone: customer.phone,
+            status: "sent",
+            messageSid: message.sid
+          };
+        } catch (error) {
+          console.error(`Failed to send SMS to ${customer.phone}:`, error.message);
+          
+          return {
+            customerId: customer.id,
+            customerName: customer.name,
+            phone: customer.phone,
+            status: "failed",
+            error: error.message
+          };
+        }
       });
 
       const messageResults = await Promise.all(messagePromises);
       const successfulMessages = messageResults.filter(result => result.status === "sent");
+      const failedMessages = messageResults.filter(result => result.status === "failed");
 
       res.json({
-        message: `Bulk messages sent successfully to ${successfulMessages.length} customers`,
+        message: `Bulk messages processed: ${successfulMessages.length} sent, ${failedMessages.length} failed`,
         messagesSent: successfulMessages.length,
+        messagesFailed: failedMessages.length,
         totalCustomers: customers.length,
         campaignName,
         messageContent,
