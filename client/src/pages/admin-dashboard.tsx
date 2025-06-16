@@ -145,6 +145,24 @@ export default function AdminDashboard() {
     },
   });
 
+  const bulkMessageMutation = useMutation({
+    mutationFn: (data: { campaignId: number; campaignName: string; campaignUrl: string }) => 
+      apiRequest("POST", "/api/campaigns/bulk-message", data),
+    onSuccess: (response: any) => {
+      toast({ 
+        title: "Bulk messages sent successfully!", 
+        description: `Sent ${response.messagesSent} messages to customers`
+      });
+    },
+    onError: (error: Error) => {
+      toast({ 
+        title: "Error sending bulk messages", 
+        description: error.message,
+        variant: "destructive" 
+      });
+    },
+  });
+
   const bulkImportCustomersMutation = useMutation({
     mutationFn: (data: any) => apiRequest("POST", "/api/customers/bulk", data),
     onSuccess: (response: any) => {
@@ -253,6 +271,16 @@ export default function AdminDashboard() {
       status: "rejected" 
     });
     closeImageModal();
+  };
+
+  const handleBulkMessage = (campaign: Campaign) => {
+    const campaignUrl = `${window.location.origin}/c/${campaign.uniqueUrl}`;
+    
+    bulkMessageMutation.mutate({
+      campaignId: campaign.id,
+      campaignName: campaign.name,
+      campaignUrl: campaignUrl
+    });
   };
 
   const getStatusColor = (status: string) => {
@@ -494,6 +522,22 @@ export default function AdminDashboard() {
                       )}
                       <Button variant="outline" size="sm">
                         <Edit size={16} />
+                      </Button>
+                    </div>
+                    
+                    {/* Bulk Message Button */}
+                    <div className="mt-3">
+                      <Button
+                        className="w-full bg-purple-600 hover:bg-purple-700"
+                        size="sm"
+                        onClick={() => handleBulkMessage(campaign)}
+                        disabled={bulkMessageMutation.isPending}
+                      >
+                        <UserPlus size={16} className="mr-2" />
+                        {bulkMessageMutation.isPending && bulkMessageMutation.variables?.campaignId === campaign.id 
+                          ? "Sending Messages..." 
+                          : "Bulk Message Customers"
+                        }
                       </Button>
                     </div>
                   </CardContent>

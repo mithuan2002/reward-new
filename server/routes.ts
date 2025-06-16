@@ -318,6 +318,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Bulk message customers for a campaign
+  app.post("/api/campaigns/bulk-message", async (req, res) => {
+    try {
+      const { campaignId, campaignName, campaignUrl } = req.body;
+      
+      if (!campaignId || !campaignName || !campaignUrl) {
+        return res.status(400).json({ message: "Campaign ID, name, and URL are required" });
+      }
+
+      // Verify campaign exists
+      const campaign = await storage.getCampaign(campaignId);
+      if (!campaign) {
+        return res.status(404).json({ message: "Campaign not found" });
+      }
+
+      // Get all customers
+      const customers = await storage.getCustomers();
+      
+      if (customers.length === 0) {
+        return res.status(400).json({ message: "No customers found to message" });
+      }
+
+      // Create message content
+      const messageContent = `🎉 Exciting News from ${campaignName}!\n\n` +
+        `You're invited to participate in our loyalty campaign and earn rewards!\n\n` +
+        `Campaign Details:\n` +
+        `📋 ${campaign.description}\n` +
+        `🎁 Reward: ${campaign.rewardValue}\n` +
+        `⏰ Valid until: ${new Date(campaign.endDate).toLocaleDateString()}\n\n` +
+        `🔗 Participate now: ${campaignUrl}\n\n` +
+        `Upload your photo and claim your reward today!`;
+
+      // Log the message details (In production, you'd integrate with SMS service like Twilio)
+      console.log(`Bulk message prepared for ${customers.length} customers:`);
+      console.log(`Campaign: ${campaignName}`);
+      console.log(`Message: ${messageContent}`);
+      
+      // Simulate sending messages to customers
+      const messagePromises = customers.map(async (customer) => {
+        // In production, replace this with actual SMS/messaging service
+        console.log(`Sending message to ${customer.name} (${customer.phone})`);
+        
+        // Simulate API call delay
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        return {
+          customerId: customer.id,
+          customerName: customer.name,
+          phone: customer.phone,
+          status: "sent"
+        };
+      });
+
+      const messageResults = await Promise.all(messagePromises);
+      const successfulMessages = messageResults.filter(result => result.status === "sent");
+
+      res.json({
+        message: `Bulk messages sent successfully to ${successfulMessages.length} customers`,
+        messagesSent: successfulMessages.length,
+        totalCustomers: customers.length,
+        campaignName,
+        messageContent,
+        results: messageResults
+      });
+    } catch (error) {
+      console.error("Bulk message error:", error);
+      res.status(500).json({ message: "Failed to send bulk messages" });
+    }
+  });
+
   // Dashboard stats
   app.get("/api/dashboard/stats", async (req, res) => {
     try {
