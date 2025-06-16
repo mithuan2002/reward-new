@@ -613,12 +613,6 @@ export default function AdminDashboard() {
                         <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
                           Date
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                          Status
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                          Actions
-                        </th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-slate-200">
@@ -670,24 +664,6 @@ export default function AdminDashboard() {
                             ) : (
                               "Just now"
                             )}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <Badge className={getStatusColor(submission.status)}>
-                              {submission.status.charAt(0).toUpperCase() + submission.status.slice(1)}
-                            </Badge>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <div className="flex items-center space-x-2">
-                              <Button size="sm" variant="ghost">
-                                <Eye size={16} />
-                              </Button>
-                              <Button size="sm" variant="ghost">
-                                <Download size={16} />
-                              </Button>
-                              <Button size="sm" variant="ghost" className="text-red-500 hover:text-red-700">
-                                <Trash2 size={16} />
-                              </Button>
-                            </div>
                           </td>
                         </tr>
                       ))}
