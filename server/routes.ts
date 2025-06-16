@@ -32,7 +32,7 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  
+
   // Serve uploaded files
   app.use("/uploads", (req, res, next) => {
     res.sendFile(path.join(uploadsDir, req.path));
@@ -128,7 +128,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { campaignId } = req.query;
       let submissions;
-      
+
       if (campaignId) {
         submissions = await storage.getSubmissionsByCampaign(parseInt(campaignId as string));
         // Add campaign name for consistency
@@ -140,7 +140,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         submissions = await storage.getSubmissions();
       }
-      
+
       res.json(submissions);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch submissions" });
@@ -154,7 +154,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { campaignId, customerName, phone } = req.body;
-      
+
       // Validate required fields
       if (!campaignId || !customerName || !phone) {
         return res.status(400).json({ message: "Campaign ID, customer name, and phone are required" });
@@ -170,7 +170,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const fileExtension = path.extname(req.file.originalname);
       const newFileName = `${req.file.filename}${fileExtension}`;
       const newFilePath = path.join(uploadsDir, newFileName);
-      
+
       fs.renameSync(req.file.path, newFilePath);
 
       const submissionData = {
@@ -182,14 +182,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const validatedData = insertSubmissionSchema.parse(submissionData);
       const submission = await storage.createSubmission(validatedData);
-      
+
       res.status(201).json(submission);
     } catch (error) {
       // Clean up uploaded file on error
       if (req.file) {
         fs.unlink(req.file.path, () => {});
       }
-      
+
       if (error instanceof Error) {
         res.status(400).json({ message: error.message });
       } else {
@@ -202,7 +202,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const { status } = req.body;
-      
+
       if (!status || !["pending", "approved", "rejected"].includes(status)) {
         return res.status(400).json({ message: "Valid status is required" });
       }
@@ -243,13 +243,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/customers", async (req, res) => {
     try {
       const validatedData = insertCustomerSchema.parse(req.body);
-      
+
       // Check if customer with this phone already exists
       const existingCustomer = await storage.getCustomerByPhone(validatedData.phone);
       if (existingCustomer) {
         return res.status(409).json({ message: "Customer with this phone number already exists" });
       }
-      
+
       const customer = await storage.createCustomer(validatedData);
       res.status(201).json(customer);
     } catch (error) {
@@ -264,14 +264,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/customers/bulk", async (req, res) => {
     try {
       const { customers } = req.body;
-      
+
       if (!Array.isArray(customers) || customers.length === 0) {
         return res.status(400).json({ message: "Customers array is required" });
       }
 
       // Validate each customer record
       const validatedCustomers = customers.map(customer => insertCustomerSchema.parse(customer));
-      
+
       const createdCustomers = await storage.createCustomersBulk(validatedCustomers);
       res.status(201).json({ 
         message: `Successfully processed ${createdCustomers.length} customers`,
@@ -290,7 +290,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const updates = insertCustomerSchema.partial().parse(req.body);
-      
+
       const customer = await storage.updateCustomer(id, updates);
       if (!customer) {
         return res.status(404).json({ message: "Customer not found" });
@@ -324,7 +324,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const campaigns = await storage.getCampaigns();
       const submissions = await storage.getSubmissions();
       const customers = await storage.getCustomers();
-      
+
       const stats = {
         totalCampaigns: campaigns.length,
         activeCampaigns: campaigns.filter(c => c.status === "active").length,
@@ -332,7 +332,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         totalCustomers: customers.length,
         avgEngagement: 73, // This could be calculated based on actual data
       };
-      
+
       res.json(stats);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch dashboard stats" });
