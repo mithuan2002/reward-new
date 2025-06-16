@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { 
   BellRing, 
@@ -25,7 +26,10 @@ import {
   UserPlus,
   BarChart3,
   Play,
-  Trash2
+  Trash2,
+  Check,
+  X,
+  ZoomIn
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -66,6 +70,8 @@ export default function AdminDashboard() {
   const [showCustomerForm, setShowCustomerForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCampaign, setSelectedCampaign] = useState<string>("all");
+  const [selectedImage, setSelectedImage] = useState<Submission | null>(null);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const { toast } = useToast();
 
   // Queries
@@ -221,6 +227,32 @@ export default function AdminDashboard() {
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(`${window.location.origin}/c/${text}`);
     toast({ title: "Campaign URL copied to clipboard!" });
+  };
+
+  const openImageModal = (submission: Submission) => {
+    setSelectedImage(submission);
+    setIsImageModalOpen(true);
+  };
+
+  const closeImageModal = () => {
+    setSelectedImage(null);
+    setIsImageModalOpen(false);
+  };
+
+  const handleApproveSubmission = (submissionId: number) => {
+    updateSubmissionStatusMutation.mutate({ 
+      id: submissionId, 
+      status: "approved" 
+    });
+    closeImageModal();
+  };
+
+  const handleRejectSubmission = (submissionId: number) => {
+    updateSubmissionStatusMutation.mutate({ 
+      id: submissionId, 
+      status: "rejected" 
+    });
+    closeImageModal();
   };
 
   const getStatusColor = (status: string) => {
@@ -613,6 +645,12 @@ export default function AdminDashboard() {
                         <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
                           Date
                         </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                          Status
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
+                          Actions
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-slate-200">
@@ -636,14 +674,20 @@ export default function AdminDashboard() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center space-x-3">
-                              <img
-                                src={submission.imageUrl}
-                                alt="Submission"
-                                className="w-12 h-12 rounded-lg object-cover border border-slate-200"
-                                onError={(e) => {
-                                  (e.target as HTMLImageElement).src = "https://via.placeholder.com/48x48?text=IMG";
-                                }}
-                              />
+                              <div className="relative">
+                                <img
+                                  src={submission.imageUrl}
+                                  alt="Submission"
+                                  className="w-12 h-12 rounded-lg object-cover border border-slate-200 cursor-pointer hover:opacity-80 transition-opacity"
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).src = "https://via.placeholder.com/48x48?text=IMG";
+                                  }}
+                                  onClick={() => openImageModal(submission)}
+                                />
+                                <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                                  <ZoomIn className="text-white w-4 h-4" />
+                                </div>
+                              </div>
                               <div>
                                 <div className="text-sm font-medium text-slate-900">Photo Uploaded</div>
                                 <div className="text-sm text-slate-500">
@@ -664,6 +708,45 @@ export default function AdminDashboard() {
                             ) : (
                               "Just now"
                             )}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <Badge className={getStatusColor(submission.status)}>
+                              {submission.status.charAt(0).toUpperCase() + submission.status.slice(1)}
+                            </Badge>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div className="flex items-center space-x-2">
+                              <Button 
+                                size="sm" 
+                                variant="ghost"
+                                onClick={() => openImageModal(submission)}
+                                title="View full image"
+                              >
+                                <Eye size={16} />
+                              </Button>
+                              {submission.status === "pending" && (
+                                <>
+                                  <Button 
+                                    size="sm" 
+                                    variant="ghost" 
+                                    className="text-green-600 hover:text-green-700"
+                                    onClick={() => handleApproveSubmission(submission.id)}
+                                    title="Approve submission"
+                                  >
+                                    <Check size={16} />
+                                  </Button>
+                                  <Button 
+                                    size="sm" 
+                                    variant="ghost" 
+                                    className="text-red-500 hover:text-red-700"
+                                    onClick={() => handleRejectSubmission(submission.id)}
+                                    title="Reject submission"
+                                  >
+                                    <X size={16} />
+                                  </Button>
+                                </>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -914,6 +997,77 @@ export default function AdminDashboard() {
           </div>
         )}
       </div>
+
+      {/* Image Viewing Modal */}
+      <Dialog open={isImageModalOpen} onOpenChange={setIsImageModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
+          <DialogHeader>
+            <DialogTitle>Submission Review</DialogTitle>
+            <DialogDescription>
+              Review the customer submission and approve or reject it.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedImage && (
+            <div className="space-y-6">
+              {/* Customer Info */}
+              <div className="flex items-center space-x-4 p-4 bg-slate-50 rounded-lg">
+                <div className="w-12 h-12 brand-gradient rounded-full flex items-center justify-center text-white font-medium">
+                  {selectedImage.customerName.split(' ').map(n => n[0]).join('')}
+                </div>
+                <div>
+                  <h3 className="font-semibold text-slate-900">{selectedImage.customerName}</h3>
+                  <p className="text-sm text-slate-600">{selectedImage.phone}</p>
+                  <p className="text-xs text-slate-500">Campaign: {selectedImage.campaignName}</p>
+                </div>
+                <div className="ml-auto">
+                  <Badge className={getStatusColor(selectedImage.status)}>
+                    {selectedImage.status.charAt(0).toUpperCase() + selectedImage.status.slice(1)}
+                  </Badge>
+                </div>
+              </div>
+
+              {/* Full Size Image */}
+              <div className="flex justify-center">
+                <img
+                  src={selectedImage.imageUrl}
+                  alt="Customer submission"
+                  className="max-w-full max-h-[50vh] object-contain rounded-lg border border-slate-200"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "https://via.placeholder.com/400x300?text=Image+Not+Found";
+                  }}
+                />
+              </div>
+
+              {/* Action Buttons */}
+              {selectedImage.status === "pending" && (
+                <div className="flex justify-center space-x-4">
+                  <Button
+                    onClick={() => handleApproveSubmission(selectedImage.id)}
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    <Check size={16} className="mr-2" />
+                    Approve Submission
+                  </Button>
+                  <Button
+                    onClick={() => handleRejectSubmission(selectedImage.id)}
+                    variant="destructive"
+                  >
+                    <X size={16} className="mr-2" />
+                    Reject Submission
+                  </Button>
+                </div>
+              )}
+
+              {selectedImage.status !== "pending" && (
+                <div className="text-center text-slate-600">
+                  This submission has already been {selectedImage.status}.
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
