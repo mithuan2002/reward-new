@@ -1,4 +1,4 @@
-import { users, campaigns, submissions, type User, type InsertUser, type Campaign, type InsertCampaign, type Submission, type InsertSubmission } from "@shared/schema";
+import { users, campaigns, submissions, customers, type User, type InsertUser, type Campaign, type InsertCampaign, type Submission, type InsertSubmission, type Customer, type InsertCustomer } from "@shared/schema";
 import { nanoid } from "nanoid";
 
 export interface IStorage {
@@ -14,6 +14,15 @@ export interface IStorage {
   updateCampaign(id: number, updates: Partial<Campaign>): Promise<Campaign | undefined>;
   deleteCampaign(id: number): Promise<boolean>;
   
+  // Customer methods
+  getCustomers(): Promise<Customer[]>;
+  getCustomer(id: number): Promise<Customer | undefined>;
+  getCustomerByPhone(phone: string): Promise<Customer | undefined>;
+  createCustomer(customer: InsertCustomer): Promise<Customer>;
+  updateCustomer(id: number, updates: Partial<Customer>): Promise<Customer | undefined>;
+  deleteCustomer(id: number): Promise<boolean>;
+  createCustomersBulk(customers: InsertCustomer[]): Promise<Customer[]>;
+  
   // Submission methods
   getSubmissions(): Promise<(Submission & { campaignName: string })[]>;
   getSubmissionsByCampaign(campaignId: number): Promise<Submission[]>;
@@ -26,17 +35,21 @@ export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private campaigns: Map<number, Campaign>;
   private submissions: Map<number, Submission>;
+  private customers: Map<number, Customer>;
   private currentUserId: number;
   private currentCampaignId: number;
   private currentSubmissionId: number;
+  private currentCustomerId: number;
 
   constructor() {
     this.users = new Map();
     this.campaigns = new Map();
     this.submissions = new Map();
+    this.customers = new Map();
     this.currentUserId = 1;
     this.currentCampaignId = 1;
     this.currentSubmissionId = 1;
+    this.currentCustomerId = 1;
     
     // Initialize with sample campaigns
     this.initializeSampleData();
@@ -120,6 +133,36 @@ export class MemStorage implements IStorage {
       this.submissions.set(submission.id, submission);
     });
     this.currentSubmissionId = 4;
+
+    // Create sample customers
+    const sampleCustomers: Customer[] = [
+      {
+        id: 1,
+        name: "John Smith",
+        phone: "+1 (555) 111-2222",
+        email: "john.smith@email.com",
+        createdAt: new Date("2024-08-01T10:00:00"),
+      },
+      {
+        id: 2,
+        name: "Emma Johnson",
+        phone: "+1 (555) 333-4444",
+        email: "emma.johnson@email.com",
+        createdAt: new Date("2024-08-02T11:30:00"),
+      },
+      {
+        id: 3,
+        name: "Michael Brown",
+        phone: "+1 (555) 555-6666",
+        email: "michael.brown@email.com",
+        createdAt: new Date("2024-08-03T14:15:00"),
+      },
+    ];
+
+    sampleCustomers.forEach(customer => {
+      this.customers.set(customer.id, customer);
+    });
+    this.currentCustomerId = 4;
   }
 
   async getUser(id: number): Promise<User | undefined> {
@@ -162,6 +205,7 @@ export class MemStorage implements IStorage {
       ...insertCampaign,
       id,
       uniqueUrl,
+      status: insertCampaign.status || "draft",
       createdAt: new Date(),
     };
     this.campaigns.set(id, campaign);
@@ -207,6 +251,7 @@ export class MemStorage implements IStorage {
     const submission: Submission = {
       ...insertSubmission,
       id,
+      status: insertSubmission.status || "pending",
       createdAt: new Date(),
     };
     this.submissions.set(id, submission);
@@ -224,6 +269,67 @@ export class MemStorage implements IStorage {
 
   async deleteSubmission(id: number): Promise<boolean> {
     return this.submissions.delete(id);
+  }
+
+  // Customer methods
+  async getCustomers(): Promise<Customer[]> {
+    return Array.from(this.customers.values()).sort((a, b) => 
+      new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+    );
+  }
+
+  async getCustomer(id: number): Promise<Customer | undefined> {
+    return this.customers.get(id);
+  }
+
+  async getCustomerByPhone(phone: string): Promise<Customer | undefined> {
+    return Array.from(this.customers.values()).find(
+      (customer) => customer.phone === phone
+    );
+  }
+
+  async createCustomer(insertCustomer: InsertCustomer): Promise<Customer> {
+    const id = this.currentCustomerId++;
+    const customer: Customer = {
+      ...insertCustomer,
+      id,
+      createdAt: new Date(),
+    };
+    this.customers.set(id, customer);
+    return customer;
+  }
+
+  async updateCustomer(id: number, updates: Partial<Customer>): Promise<Customer | undefined> {
+    const customer = this.customers.get(id);
+    if (!customer) return undefined;
+    
+    const updatedCustomer = { ...customer, ...updates };
+    this.customers.set(id, updatedCustomer);
+    return updatedCustomer;
+  }
+
+  async deleteCustomer(id: number): Promise<boolean> {
+    return this.customers.delete(id);
+  }
+
+  async createCustomersBulk(customers: InsertCustomer[]): Promise<Customer[]> {
+    const createdCustomers: Customer[] = [];
+    
+    for (const insertCustomer of customers) {
+      // Check if customer with this phone already exists
+      const existingCustomer = await this.getCustomerByPhone(insertCustomer.phone);
+      if (existingCustomer) {
+        // Update existing customer
+        const updated = await this.updateCustomer(existingCustomer.id, insertCustomer);
+        if (updated) createdCustomers.push(updated);
+      } else {
+        // Create new customer
+        const newCustomer = await this.createCustomer(insertCustomer);
+        createdCustomers.push(newCustomer);
+      }
+    }
+    
+    return createdCustomers;
   }
 }
 
