@@ -512,13 +512,26 @@ export default function AdminDashboard() {
                     </div>
 
                     <div className="flex space-x-2">
-                      <Button
-                        className="flex-1 bg-blue-600 hover:bg-blue-700"
-                        size="sm"
-                        onClick={() => setActiveTab("submissions")}
-                      >
-                        View Submissions
-                      </Button>
+                      {campaign.status === "draft" ? (
+                        <Button
+                          className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                          size="sm"
+                          onClick={() => updateCampaignStatusMutation.mutate({ 
+                            id: campaign.id, 
+                            status: "active" 
+                          })}
+                        >
+                          Activate
+                        </Button>
+                      ) : (
+                        <Button
+                          className="flex-1 bg-blue-600 hover:bg-blue-700"
+                          size="sm"
+                          onClick={() => setActiveTab("submissions")}
+                        >
+                          View Submissions
+                        </Button>
+                      )}
                       <Button variant="outline" size="sm">
                         <Edit size={16} />
                       </Button>
