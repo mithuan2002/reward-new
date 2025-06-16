@@ -435,7 +435,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         messagesFailed: failedMessages.length,
         totalCustomers: customers.length,
         campaignName,
-        messageContent: messageContent,
+        messageContent,
         results: messageResults
       });
     } catch (error) {
