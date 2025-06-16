@@ -389,7 +389,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Initialize Twilio client
-      const twilio = require('twilio');
+      const { default: twilio } = await import('twilio');
       const client = twilio(twilioAccountSid, twilioAuthToken);
       
       // Send real SMS messages to customers
