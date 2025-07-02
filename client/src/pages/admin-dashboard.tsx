@@ -154,7 +154,9 @@ export default function AdminDashboard() {
     mutationFn: (campaignId: number) => 
       apiRequest("GET", `/api/campaigns/${campaignId}/widget`),
     onSuccess: (response: any) => {
-      setWidgetCode(response.widgetCode);
+      console.log("Widget API Response:", response);
+      console.log("Widget Code:", response.widgetCode);
+      setWidgetCode(response.widgetCode || "");
       setIsWidgetModalOpen(true);
       toast({ 
         title: "Widget code generated successfully!", 
