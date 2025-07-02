@@ -328,11 +328,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Campaign not found" });
       }
 
+
+
       // Get base URL from request
       const baseUrl = `${req.protocol}://${req.get('host')}`;
       const campaignUrl = `${baseUrl}/c/${campaign.uniqueUrl}`;
 
-      // Generate widget code
+      // Generate widget code - using correct database field names
       const widgetCode = `<!-- LoyaltyBoost Campaign Widget -->
 <div id="loyaltyboost-widget-${campaign.id}" style="
   border: 2px solid #3b82f6;
