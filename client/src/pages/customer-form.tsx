@@ -8,9 +8,11 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import FileUpload from "@/components/ui/file-upload";
-import { Gift, CheckCircle } from "lucide-react";
+import FlyerGenerator from "@/components/flyer-generator";
+import { Gift, CheckCircle, Share2, Upload } from "lucide-react";
 
 const formSchema = z.object({
   customerName: z.string().min(2, "Name must be at least 2 characters"),
@@ -26,6 +28,8 @@ type Campaign = {
   description: string;
   rewardValue: string;
   status: string;
+  endDate: string;
+  uniqueUrl: string;
 };
 
 export default function CustomerForm() {
@@ -156,7 +160,7 @@ export default function CustomerForm() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <CardHeader className="border-b border-slate-200">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 brand-gradient rounded-lg flex items-center justify-center">
@@ -170,63 +174,91 @@ export default function CustomerForm() {
         </CardHeader>
 
         <CardContent className="p-6">
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div>
-              <Label htmlFor="customerName">Your Name *</Label>
-              <Input
-                id="customerName"
-                placeholder="Enter your full name"
-                {...form.register("customerName")}
-                className={form.formState.errors.customerName ? "border-red-500" : ""}
-              />
-              {form.formState.errors.customerName && (
-                <p className="text-red-500 text-sm mt-1">
-                  {form.formState.errors.customerName.message}
-                </p>
-              )}
-            </div>
+          <Tabs defaultValue="participate" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="participate" className="flex items-center gap-2">
+                <Upload className="h-4 w-4" />
+                Participate
+              </TabsTrigger>
+              <TabsTrigger value="share" className="flex items-center gap-2">
+                <Share2 className="h-4 w-4" />
+                Share Campaign
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="participate" className="mt-6">
+              <div className="space-y-4">
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  <p className="text-blue-800 font-semibold text-center">Win: {campaign.rewardValue}</p>
+                  <p className="text-blue-600 text-sm text-center mt-1">
+                    Valid until: {new Date(campaign.endDate).toLocaleDateString()}
+                  </p>
+                </div>
+                
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  <div>
+                    <Label htmlFor="customerName">Your Name *</Label>
+                    <Input
+                      id="customerName"
+                      placeholder="Enter your full name"
+                      {...form.register("customerName")}
+                      className={form.formState.errors.customerName ? "border-red-500" : ""}
+                    />
+                    {form.formState.errors.customerName && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {form.formState.errors.customerName.message}
+                      </p>
+                    )}
+                  </div>
 
-            <div>
-              <Label htmlFor="phone">Phone Number *</Label>
-              <Input
-                id="phone"
-                type="tel"
-                placeholder="+1 (555) 123-4567"
-                {...form.register("phone")}
-                className={form.formState.errors.phone ? "border-red-500" : ""}
-              />
-              {form.formState.errors.phone && (
-                <p className="text-red-500 text-sm mt-1">
-                  {form.formState.errors.phone.message}
-                </p>
-              )}
-            </div>
+                  <div>
+                    <Label htmlFor="phone">Phone Number *</Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="+1 (555) 123-4567"
+                      {...form.register("phone")}
+                      className={form.formState.errors.phone ? "border-red-500" : ""}
+                    />
+                    {form.formState.errors.phone && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {form.formState.errors.phone.message}
+                      </p>
+                    )}
+                  </div>
 
-            <div>
-              <Label>Upload Your Photo *</Label>
-              <FileUpload
-                onFileSelect={(file) => form.setValue("image", file)}
-                error={form.formState.errors.image?.message}
-              />
-            </div>
+                  <div>
+                    <Label>Upload Your Photo *</Label>
+                    <FileUpload
+                      onFileSelect={(file) => form.setValue("image", file)}
+                      error={form.formState.errors.image?.message}
+                    />
+                  </div>
 
-            <div className="bg-slate-50 p-4 rounded-lg">
-              <h3 className="font-medium text-slate-900 mb-2">How it works:</h3>
-              <ol className="text-sm text-slate-600 space-y-1">
-                <li>1. Fill out your details above</li>
-                <li>2. Upload a photo featuring our products</li>
-                <li>3. Get your {campaign.rewardValue} instantly!</li>
-              </ol>
-            </div>
+                  <div className="bg-slate-50 p-4 rounded-lg">
+                    <h3 className="font-medium text-slate-900 mb-2">How it works:</h3>
+                    <ol className="text-sm text-slate-600 space-y-1">
+                      <li>1. Fill out your details above</li>
+                      <li>2. Upload a photo featuring our products</li>
+                      <li>3. Get your {campaign.rewardValue} instantly!</li>
+                    </ol>
+                  </div>
 
-            <Button
-              type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700"
-              disabled={submitMutation.isPending}
-            >
-              {submitMutation.isPending ? "Submitting..." : "Submit & Get My Reward"}
-            </Button>
-          </form>
+                  <Button
+                    type="submit"
+                    className="w-full bg-blue-600 hover:bg-blue-700"
+                    disabled={submitMutation.isPending}
+                  >
+                    {submitMutation.isPending ? "Submitting..." : "Submit & Get My Reward"}
+                  </Button>
+                </form>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="share" className="mt-6">
+              <FlyerGenerator campaign={campaign} />
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
     </div>

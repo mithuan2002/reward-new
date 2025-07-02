@@ -156,8 +156,6 @@ export default function AdminDashboard() {
       return await response.json();
     },
     onSuccess: (response: any) => {
-      console.log("Widget API Response:", response);
-      console.log("Widget Code:", response.widgetCode);
       setWidgetCode(response.widgetCode || "");
       setIsWidgetModalOpen(true);
       toast({ 
