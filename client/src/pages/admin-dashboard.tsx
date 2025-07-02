@@ -864,26 +864,30 @@ export default function AdminDashboard() {
               </Card>
             )}
 
-            {/* CSV Import Instructions */}
+            {/* SMS and WhatsApp Integration Notice */}
             <Card className="mb-8 bg-blue-50 border-blue-200">
-              <CardContent className="p-6">
+              <CardContent className="pt-6">
                 <div className="flex items-start space-x-3">
-                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <Download className="text-blue-600" size={16} />
+                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Download className="w-4 h-4 text-blue-600" />
                   </div>
-                  <div>
-                    <h3 className="font-medium text-blue-900 mb-2">CSV Import Format</h3>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-blue-900 mb-2">🚀 Coming Soon: SMS & WhatsApp Integration</h3>
                     <p className="text-blue-700 text-sm mb-3">
-                      Your CSV file should have the following columns: <strong>name, phone, email</strong>
+                      We are building SMS and WhatsApp integration for bulk messaging the campaign flyer. Early supporters will be provided at flat price.
                     </p>
-                    <div className="bg-white rounded border border-blue-200 p-3 text-xs font-mono">
-                      <div className="text-blue-600">name,phone,email</div>
-                      <div className="text-slate-600">John Smith,+1 (555) 123-4567,john@email.com</div>
-                      <div className="text-slate-600">Jane Doe,+1 (555) 987-6543,jane@email.com</div>
+                    <div className="bg-white rounded-lg p-3 border border-blue-200">
+                      <p className="text-sm text-slate-700">
+                        For more queries contact: <strong>mithuan137@gmail.com</strong>
+                      </p>
                     </div>
+                    <p className="text-blue-600 text-xs mt-2">
+                      <strong>Note:</strong> Phone numbers must be unique. Duplicates will be skipped automatically.
+                    </p>
                   </div>
                 </div>
-              </CardContent>The code adds a bulk mailing feature to the admin dashboard, including a new tab and component.            </Card>
+              </CardContent>
+            </Card>
 
             {/* Customers List */}
             <Card>
