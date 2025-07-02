@@ -100,7 +100,65 @@ Implements PostgreSQL database storage (`DatabaseStorage`) using Drizzle ORM wit
 - **Auto-deployment**: Configured for autoscale deployment target
 - **Port Mapping**: Internal port 5000 mapped to external port 80
 
+## Current Features and Functionalities
+
+### Core Campaign Management
+- **Campaign Creation**: Create photo submission campaigns with customizable rewards and end dates
+- **Campaign Dashboard**: View campaign statistics, submission counts, and performance metrics
+- **Campaign Status Management**: Active/inactive campaign controls with automatic URL generation
+- **Campaign Widget Generator**: Generate embeddable HTML widgets for websites with responsive design
+
+### Customer Management System
+- **Customer Database**: Complete customer management with name, phone, email storage
+- **Customer Registration**: Manual customer entry and bulk CSV import functionality
+- **Customer Search**: Real-time search across customer database by name, phone, or email
+- **Duplicate Prevention**: Automatic duplicate detection by phone number
+- **Customer Statistics**: Track total customer count in dashboard analytics
+
+### Photo Submission Workflow
+- **Public Submission Forms**: Unique campaign URLs for customer photo submissions
+- **File Upload Management**: Secure image upload with preview and validation
+- **Submission Review**: Admin approval/rejection workflow for all submissions
+- **Submission Statistics**: Track pending, approved, and rejected submissions
+- **Image Gallery**: Full-size image preview with submission details
+
+### Customer Flyer Generation
+- **Multiple Templates**: Three professional flyer designs (Modern, Classic, Fun)
+- **QR Code Integration**: Auto-generated QR codes linking to campaign forms
+- **Download Options**: SVG flyer downloads for printing and sharing
+- **Social Sharing**: Ready-to-use share text for social media promotion
+- **Campaign Integration**: Flyers automatically include campaign details and rewards
+
+### Email Communication System
+- **Bulk Email Campaigns**: Send promotional emails to customer segments (Currently disabled in UI)
+- **SMTP Integration**: Configurable email service with authentication
+- **Email Templates**: Professional email templates with campaign details
+- **Delivery Tracking**: Monitor email send success and failure rates
+- **Customer Targeting**: Send emails to selected customer groups
+
+### Administrative Features
+- **Admin Dashboard**: Comprehensive admin interface with tabbed navigation
+- **Real-time Statistics**: Live dashboard with campaign and customer metrics
+- **Search and Filtering**: Advanced search across campaigns, submissions, and customers
+- **Responsive Design**: Mobile-friendly interface for admin and customer use
+- **Data Export**: Customer data export via CSV format
+
+### Technical Infrastructure
+- **PostgreSQL Database**: Production-ready database with Drizzle ORM
+- **File Storage**: Secure local file storage for uploaded images
+- **API Architecture**: RESTful API endpoints for all functionality
+- **TypeScript Support**: Full type safety across frontend and backend
+- **Modern UI Components**: shadcn/ui component library with Tailwind CSS
+
 ## Recent Changes
+
+**January 2, 2025** - Bulk Email System Implementation:
+- Added nodemailer integration for bulk email campaigns
+- Created email service with SMTP configuration support
+- Built bulk mailer component with customer selection and email composition
+- Added email delivery tracking and error handling
+- Integrated email functionality with customer management system
+- Email feature currently hidden from navigation pending SMTP configuration
 
 **July 2, 2025** - Customer flyer generator and QR code integration:
 - Added customer flyer generator feature with three templates (Modern, Classic, Fun)

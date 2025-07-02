@@ -11,7 +11,7 @@ export default function Navigation({ activeTab, onTabChange }: NavigationProps) 
     { id: "campaigns" as const, label: "Campaigns", icon: BellRing },
     { id: "submissions" as const, label: "Submissions", icon: Users },
     { id: "customers" as const, label: "Customers", icon: UserPlus },
-    { id: "bulk-email" as const, label: "Bulk Email", icon: Mail },
+    // { id: "bulk-email" as const, label: "Bulk Email", icon: Mail }, // Hidden pending SMTP configuration
   ];
 
   return (
