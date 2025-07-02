@@ -49,7 +49,7 @@ export default function FlyerGenerator({ campaign }: FlyerGeneratorProps) {
     const style = templates[template as keyof typeof templates];
     
     return `
-      <svg width="400" height="600" xmlns="http://www.w3.org/2000/svg">
+      <svg width="400" height="700" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
             ${style.background.includes('gradient') 
@@ -61,7 +61,7 @@ export default function FlyerGenerator({ campaign }: FlyerGeneratorProps) {
           </linearGradient>
         </defs>
         
-        <rect width="400" height="600" fill="url(#bg)" rx="20"/>
+        <rect width="400" height="700" fill="url(#bg)" rx="20"/>
         
         <!-- Header -->
         <text x="200" y="80" text-anchor="middle" fill="${style.textColor}" font-family="Arial, sans-serif" font-size="28" font-weight="bold">
@@ -102,10 +102,10 @@ export default function FlyerGenerator({ campaign }: FlyerGeneratorProps) {
           ${campaignUrl}
         </text>
         
-        <!-- QR Code Placeholder -->
-        <rect x="160" y="540" width="80" height="40" fill="${style.textColor}" opacity="0.8" rx="5"/>
-        <text x="200" y="565" text-anchor="middle" fill="#000000" font-family="Arial, sans-serif" font-size="10">
-          Scan to Join
+        <!-- QR Code -->
+        <image x="150" y="530" width="100" height="100" href="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(campaignUrl)}&bgcolor=ffffff&color=000000" />
+        <text x="200" y="650" text-anchor="middle" fill="${style.textColor}" font-family="Arial, sans-serif" font-size="11">
+          📱 Scan QR Code to Join
         </text>
       </svg>
     `;
@@ -183,7 +183,7 @@ ${campaign.description}
           <div className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-900">
             <div className="flex justify-center">
               <div 
-                className="w-48 h-72 border rounded-lg shadow-md overflow-hidden"
+                className="w-48 h-80 border rounded-lg shadow-md overflow-hidden"
                 dangerouslySetInnerHTML={{ 
                   __html: generateFlyerSVG(selectedTemplate)
                 }}
@@ -204,8 +204,8 @@ ${campaign.description}
           </div>
 
           <div className="text-sm text-muted-foreground">
-            💡 <strong>How to use:</strong> Download the flyer image and share it on social media, 
-            or copy the share text to post with your own images. Both include the campaign link!
+            💡 <strong>How to use:</strong> Download the flyer image with QR code and share it on social media, 
+            or copy the share text to post with your own images. The QR code lets people scan and join instantly!
           </div>
         </CardContent>
       </Card>
