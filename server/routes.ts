@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { emailService } from "./email";
 import { insertCampaignSchema, insertSubmissionSchema, insertCustomerSchema } from "@shared/schema";
 import multer from "multer";
 import path from "path";
@@ -427,6 +428,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(stats);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch dashboard stats" });
+    }
+  });
+
+  // Bulk email routes
+  app.post("/api/email/test-connection", async (req, res) => {
+    try {
+      const isConnected = await emailService.testConnection();
+      res.json({ connected: isConnected });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to test email connection" });
+    }
+  });
+
+  app.post("/api/email/send-campaign", async (req, res) => {
+    try {
+      const { campaignId, subject, recipients } = req.body;
+      
+      if (!campaignId || !subject || !recipients || !Array.isArray(recipients)) {
+        return res.status(400).json({ message: "Campaign ID, subject, and recipients are required" });
+      }
+
+      // Get campaign details
+      const campaign = await storage.getCampaign(parseInt(campaignId));
+      if (!campaign) {
+        return res.status(404).json({ message: "Campaign not found" });
+      }
+
+      // Generate email content
+      const baseUrl = `${req.protocol}://${req.get('host')}`;
+      const htmlContent = emailService.generateCampaignEmailTemplate(campaign, baseUrl);
+
+      // Send bulk email
+      const results = await emailService.sendBulkEmail({
+        subject,
+        htmlContent,
+        recipients
+      });
+
+      res.json({
+        message: `Email sent to ${results.sent} recipients`,
+        sent: results.sent,
+        failed: results.failed.length,
+        failedRecipients: results.failed
+      });
+    } catch (error) {
+      console.error("Bulk email error:", error);
+      res.status(500).json({ message: "Failed to send bulk email" });
+    }
+  });
+
+  app.post("/api/email/send-custom", async (req, res) => {
+    try {
+      const { subject, htmlContent, recipients } = req.body;
+      
+      if (!subject || !htmlContent || !recipients || !Array.isArray(recipients)) {
+        return res.status(400).json({ message: "Subject, content, and recipients are required" });
+      }
+
+      const results = await emailService.sendBulkEmail({
+        subject,
+        htmlContent,
+        recipients
+      });
+
+      res.json({
+        message: `Email sent to ${results.sent} recipients`,
+        sent: results.sent,
+        failed: results.failed.length,
+        failedRecipients: results.failed
+      });
+    } catch (error) {
+      console.error("Custom bulk email error:", error);
+      res.status(500).json({ message: "Failed to send custom bulk email" });
     }
   });
 

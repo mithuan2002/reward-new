@@ -35,6 +35,7 @@ import {
   Share2
 } from "lucide-react";
 import { format } from "date-fns";
+import { BulkMailer } from "../components/bulk-mailer";
 
 type Campaign = {
   id: number;
@@ -195,7 +196,7 @@ export default function AdminDashboard() {
   const handleCampaignSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    
+
     const campaignData = {
       name: formData.get("name") as string,
       description: formData.get("description") as string,
@@ -211,7 +212,7 @@ export default function AdminDashboard() {
   const handleCustomerSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    
+
     const customerData = {
       name: formData.get("name") as string,
       phone: formData.get("phone") as string,
@@ -228,17 +229,17 @@ export default function AdminDashboard() {
     const text = await file.text();
     const lines = text.split('\n').filter(line => line.trim());
     const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
-    
+
     const customers = lines.slice(1).map(line => {
       const values = line.split(',').map(v => v.trim());
       const customer: any = {};
-      
+
       headers.forEach((header, index) => {
         if (header === 'name') customer.name = values[index];
         if (header === 'phone') customer.phone = values[index];
         if (header === 'email') customer.email = values[index];
       });
-      
+
       return customer;
     }).filter(customer => customer.name && customer.phone);
 
@@ -324,7 +325,7 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-slate-50">
       <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Dashboard Tab */}
         {activeTab === "dashboard" && (
@@ -478,10 +479,10 @@ export default function AdminDashboard() {
                         <Edit size={16} />
                       </Button>
                     </div>
-                    
+
                     <h3 className="text-lg font-semibold text-slate-900 mb-2">{campaign.name}</h3>
                     <p className="text-sm text-slate-600 mb-4">{campaign.description}</p>
-                    
+
                     <div className="space-y-3 mb-4">
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-slate-600">Submissions</span>
@@ -542,7 +543,7 @@ export default function AdminDashboard() {
                         <Edit size={16} />
                       </Button>
                     </div>
-                    
+
                     {/* Action Buttons */}
                     <div className="mt-3 space-y-2">
                       <Button
@@ -557,7 +558,7 @@ export default function AdminDashboard() {
                           : "Get Website Widget"
                         }
                       </Button>
-                      
+
                       <Button
                         className="w-full bg-orange-600 hover:bg-orange-700"
                         size="sm"
@@ -752,7 +753,7 @@ export default function AdminDashboard() {
                     </tbody>
                   </table>
                 </div>
-                
+
                 {filteredSubmissions.length === 0 && (
                   <div className="text-center py-8">
                     <p className="text-slate-500">No submissions found matching your criteria.</p>
@@ -877,8 +878,7 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </CardContent>The code adds a bulk mailing feature to the admin dashboard, including a new tab and component.            </Card>
 
             {/* Customers List */}
             <Card>
@@ -972,7 +972,7 @@ export default function AdminDashboard() {
                     </tbody>
                   </table>
                 </div>
-                
+
                 {customers.length === 0 && (
                   <div className="text-center py-8">
                     <UserPlus className="mx-auto h-12 w-12 text-slate-400" />
@@ -1006,7 +1006,7 @@ export default function AdminDashboard() {
               Review the customer submission and approve or reject it.
             </DialogDescription>
           </DialogHeader>
-          
+
           {selectedImage && (
             <div className="space-y-6">
               {/* Customer Info */}
@@ -1077,7 +1077,7 @@ export default function AdminDashboard() {
               Copy this code and paste it into your website to display the campaign widget
             </DialogDescription>
           </DialogHeader>
-          
+
           {selectedCampaignWidget && (
             <div className="space-y-4">
               <div className="bg-slate-50 p-4 rounded-lg">
@@ -1140,7 +1140,7 @@ export default function AdminDashboard() {
               Create promotional flyers for your campaign with QR codes and share them on social media
             </DialogDescription>
           </DialogHeader>
-          
+
           {selectedCampaignFlyer && (
             <FlyerGenerator campaign={selectedCampaignFlyer} />
           )}
