@@ -91,6 +91,8 @@ export default function CustomerForm() {
           <div className="w-16 h-16 brand-gradient rounded-full flex items-center justify-center mx-auto mb-4">
             <Gift className="text-white" size={32} />
           </div>
+          <h2 className="text-xl font-bold text-slate-900 mb-1">Nambi</h2>
+          <p className="text-sm text-slate-600 mb-4">Build everlasting relationship with your customers</p>
           <p className="text-slate-600">Loading campaign...</p>
         </div>
       </div>
@@ -105,7 +107,9 @@ export default function CustomerForm() {
             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Gift className="text-red-600" size={32} />
             </div>
-            <h1 className="text-2xl font-bold text-slate-900 mb-2">Campaign Not Found</h1>
+            <h1 className="text-xl font-bold text-slate-900 mb-1">Nambi</h1>
+            <p className="text-sm text-slate-600 mb-4">Build everlasting relationship with your customers</p>
+            <h2 className="text-xl font-bold text-slate-900 mb-2">Campaign Not Found</h2>
             <p className="text-slate-600">
               The campaign you're looking for doesn't exist or may have ended.
             </p>

@@ -336,7 +336,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const campaignUrl = `${baseUrl}/c/${campaign.uniqueUrl}`;
 
       // Generate widget code - using correct database field names
-      const widgetCode = `<!-- LoyaltyBoost Campaign Widget -->
+      const widgetCode = `<!-- Nambi Campaign Widget -->
 <div id="loyaltyboost-widget-${campaign.id}" style="
   border: 2px solid #3b82f6;
   border-radius: 12px;

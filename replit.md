@@ -1,4 +1,6 @@
-# LoyaltyBoost - Customer Loyalty Campaign Platform
+# Nambi - Build everlasting relationship with your customers
+
+A comprehensive customer loyalty and engagement platform built with React, TypeScript, and Express. This application helps businesses create photo-based reward campaigns, manage customer submissions, and boost customer engagement through interactive experiences.
 
 ## Overview
 

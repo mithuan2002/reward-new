@@ -23,7 +23,10 @@ export default function Navigation({ activeTab, onTabChange }: NavigationProps) 
               <div className="w-8 h-8 brand-gradient rounded-lg flex items-center justify-center">
                 <Gift className="text-white" size={16} />
               </div>
-              <span className="text-xl font-bold text-slate-900">LoyaltyBoost</span>
+              <div>
+                <span className="text-xl font-bold text-slate-900">Nambi</span>
+                <p className="text-xs text-slate-600 -mt-1">Build everlasting relationship with your customers</p>
+              </div>
             </div>
           </div>
           
