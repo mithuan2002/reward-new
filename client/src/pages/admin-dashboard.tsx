@@ -69,7 +69,7 @@ type DashboardStats = {
 };
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<"dashboard" | "campaigns" | "submissions" | "customers">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "campaigns" | "submissions" | "customers" | "bulk-email">("dashboard");
   const [showCampaignForm, setShowCampaignForm] = useState(false);
   const [showCustomerForm, setShowCustomerForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -762,6 +762,11 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
           </div>
+        )}
+
+        {/* Bulk Email Tab */}
+        {activeTab === "bulk-email" && (
+          <BulkMailer />
         )}
 
         {/* Customers Tab */}
