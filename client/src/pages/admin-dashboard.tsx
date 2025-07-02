@@ -151,8 +151,10 @@ export default function AdminDashboard() {
   const [widgetCode, setWidgetCode] = useState("");
 
   const generateWidgetMutation = useMutation({
-    mutationFn: (campaignId: number) => 
-      apiRequest("GET", `/api/campaigns/${campaignId}/widget`),
+    mutationFn: async (campaignId: number) => {
+      const response = await apiRequest("GET", `/api/campaigns/${campaignId}/widget`);
+      return await response.json();
+    },
     onSuccess: (response: any) => {
       console.log("Widget API Response:", response);
       console.log("Widget Code:", response.widgetCode);
