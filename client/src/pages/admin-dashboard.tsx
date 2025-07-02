@@ -29,7 +29,8 @@ import {
   Trash2,
   Check,
   X,
-  ZoomIn
+  ZoomIn,
+  Code
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -145,18 +146,24 @@ export default function AdminDashboard() {
     },
   });
 
-  const bulkMessageMutation = useMutation({
-    mutationFn: (data: { campaignId: number; campaignName: string; campaignUrl: string }) => 
-      apiRequest("POST", "/api/campaigns/bulk-message", data),
+  const [selectedCampaignWidget, setSelectedCampaignWidget] = useState<Campaign | null>(null);
+  const [isWidgetModalOpen, setIsWidgetModalOpen] = useState(false);
+  const [widgetCode, setWidgetCode] = useState("");
+
+  const generateWidgetMutation = useMutation({
+    mutationFn: (campaignId: number) => 
+      apiRequest("GET", `/api/campaigns/${campaignId}/widget`),
     onSuccess: (response: any) => {
+      setWidgetCode(response.widgetCode);
+      setIsWidgetModalOpen(true);
       toast({ 
-        title: "Bulk messages sent successfully!", 
-        description: `Sent ${response.messagesSent} messages to customers`
+        title: "Widget code generated successfully!", 
+        description: "Copy the code and add it to your website"
       });
     },
     onError: (error: Error) => {
       toast({ 
-        title: "Error sending bulk messages", 
+        title: "Error generating widget", 
         description: error.message,
         variant: "destructive" 
       });
@@ -273,14 +280,14 @@ export default function AdminDashboard() {
     closeImageModal();
   };
 
-  const handleBulkMessage = (campaign: Campaign) => {
-    const campaignUrl = `${window.location.origin}/c/${campaign.uniqueUrl}`;
-    
-    bulkMessageMutation.mutate({
-      campaignId: campaign.id,
-      campaignName: campaign.name,
-      campaignUrl: campaignUrl
-    });
+  const handleGenerateWidget = (campaign: Campaign) => {
+    setSelectedCampaignWidget(campaign);
+    generateWidgetMutation.mutate(campaign.id);
+  };
+
+  const copyWidgetToClipboard = () => {
+    navigator.clipboard.writeText(widgetCode);
+    toast({ title: "Widget code copied to clipboard!" });
   };
 
   const getStatusColor = (status: string) => {
@@ -525,18 +532,18 @@ export default function AdminDashboard() {
                       </Button>
                     </div>
                     
-                    {/* Bulk Message Button */}
+                    {/* Widget Generator Button */}
                     <div className="mt-3">
                       <Button
                         className="w-full bg-purple-600 hover:bg-purple-700"
                         size="sm"
-                        onClick={() => handleBulkMessage(campaign)}
-                        disabled={bulkMessageMutation.isPending}
+                        onClick={() => handleGenerateWidget(campaign)}
+                        disabled={generateWidgetMutation.isPending}
                       >
-                        <UserPlus size={16} className="mr-2" />
-                        {bulkMessageMutation.isPending && bulkMessageMutation.variables?.campaignId === campaign.id 
-                          ? "Sending Messages..." 
-                          : "Bulk Message Customers"
+                        <Code size={16} className="mr-2" />
+                        {generateWidgetMutation.isPending && generateWidgetMutation.variables === campaign.id 
+                          ? "Generating Widget..." 
+                          : "Get Website Widget"
                         }
                       </Button>
                     </div>
@@ -1036,6 +1043,69 @@ export default function AdminDashboard() {
                   This submission has already been {selectedImage.status}.
                 </div>
               )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Widget Code Modal */}
+      <Dialog open={isWidgetModalOpen} onOpenChange={setIsWidgetModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Campaign Website Widget</DialogTitle>
+            <DialogDescription>
+              Copy this code and paste it into your website to display the campaign widget
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedCampaignWidget && (
+            <div className="space-y-4">
+              <div className="bg-slate-50 p-4 rounded-lg">
+                <h4 className="font-semibold text-slate-700 mb-2">Campaign: {selectedCampaignWidget.name}</h4>
+                <p className="text-sm text-slate-600">{selectedCampaignWidget.description}</p>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="widget-code" className="text-sm font-medium">Widget HTML Code</Label>
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    onClick={copyWidgetToClipboard}
+                    className="flex items-center gap-2"
+                  >
+                    <Copy size={14} />
+                    Copy Code
+                  </Button>
+                </div>
+                <textarea
+                  id="widget-code"
+                  value={widgetCode}
+                  readOnly
+                  className="w-full h-64 p-3 border border-slate-300 rounded-lg font-mono text-sm bg-slate-50"
+                />
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h5 className="font-semibold text-blue-900 mb-2">📋 How to Use This Widget</h5>
+                <ol className="list-decimal list-inside space-y-1 text-sm text-blue-800">
+                  <li>Copy the HTML code above</li>
+                  <li>Paste it into your website where you want the campaign to appear</li>
+                  <li>The widget will automatically display your campaign details</li>
+                  <li>Customers can click "Participate Now" to submit photos</li>
+                </ol>
+              </div>
+
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <h5 className="font-semibold text-green-900 mb-2">✨ Widget Features</h5>
+                <ul className="list-disc list-inside space-y-1 text-sm text-green-800">
+                  <li>Responsive design that works on all devices</li>
+                  <li>Eye-catching gradient background and styling</li>
+                  <li>Displays campaign name, description, and reward</li>
+                  <li>Shows campaign end date</li>
+                  <li>Direct link to photo submission form</li>
+                </ul>
+              </div>
             </div>
           )}
         </DialogContent>

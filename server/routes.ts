@@ -318,129 +318,92 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Bulk message customers for a campaign
-  app.post("/api/campaigns/bulk-message", async (req, res) => {
+  // Generate campaign widget code
+  app.get("/api/campaigns/:id/widget", async (req, res) => {
     try {
-      const { campaignId, campaignName, campaignUrl } = req.body;
-      
-      if (!campaignId || !campaignName || !campaignUrl) {
-        return res.status(400).json({ message: "Campaign ID, name, and URL are required" });
-      }
-
-      // Verify campaign exists
+      const campaignId = parseInt(req.params.id);
       const campaign = await storage.getCampaign(campaignId);
+      
       if (!campaign) {
         return res.status(404).json({ message: "Campaign not found" });
       }
 
-      // Get all customers
-      const customers = await storage.getCustomers();
-      
-      if (customers.length === 0) {
-        return res.status(400).json({ message: "No customers found to message" });
-      }
+      // Get base URL from request
+      const baseUrl = `${req.protocol}://${req.get('host')}`;
+      const campaignUrl = `${baseUrl}/c/${campaign.uniqueUrl}`;
 
-      // Create message content
-      const messageContent = `🎉 Exciting News from ${campaignName}!\n\n` +
-        `You're invited to participate in our loyalty campaign and earn rewards!\n\n` +
-        `Campaign Details:\n` +
-        `📋 ${campaign.description}\n` +
-        `🎁 Reward: ${campaign.rewardValue}\n` +
-        `⏰ Valid until: ${new Date(campaign.endDate).toLocaleDateString()}\n\n` +
-        `🔗 Participate now: ${campaignUrl}\n\n` +
-        `Upload your photo and claim your reward today!`;
-
-      console.log(`Bulk message prepared for ${customers.length} customers:`);
-      console.log(`Campaign: ${campaignName}`);
-      console.log(`Message: ${messageContent}`);
-      
-      // Check if Twilio credentials are configured
-      const twilioAccountSid = process.env.TWILIO_ACCOUNT_SID;
-      const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN;
-      const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
-
-      if (!twilioAccountSid || !twilioAuthToken || !twilioPhoneNumber) {
-        console.log("Twilio credentials not configured - simulating SMS send");
-        
-        // Simulate sending messages to customers
-        const messagePromises = customers.map(async (customer) => {
-          console.log(`Simulating SMS to ${customer.name} (${customer.phone})`);
-          await new Promise(resolve => setTimeout(resolve, 100));
-          
-          return {
-            customerId: customer.id,
-            customerName: customer.name,
-            phone: customer.phone,
-            status: "simulated"
-          };
-        });
-
-        const messageResults = await Promise.all(messagePromises);
-        
-        return res.json({
-          message: `SMS simulation completed for ${messageResults.length} customers. Configure Twilio credentials to send real SMS.`,
-          messagesSent: messageResults.length,
-          totalCustomers: customers.length,
-          campaignName,
-          messageContent,
-          results: messageResults,
-          note: "To send real SMS, add TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_PHONE_NUMBER to your environment variables"
-        });
-      }
-
-      // Initialize Twilio client
-      const { default: twilio } = await import('twilio');
-      const client = twilio(twilioAccountSid, twilioAuthToken);
-      
-      // Send real SMS messages to customers
-      const messagePromises = customers.map(async (customer) => {
-        try {
-          console.log(`Sending SMS to ${customer.name} (${customer.phone})`);
-          
-          const message = await client.messages.create({
-            body: messageContent,
-            from: twilioPhoneNumber,
-            to: customer.phone
-          });
-          
-          console.log(`SMS sent successfully to ${customer.phone}, SID: ${message.sid}`);
-          
-          return {
-            customerId: customer.id,
-            customerName: customer.name,
-            phone: customer.phone,
-            status: "sent",
-            messageSid: message.sid
-          };
-        } catch (error) {
-          console.error(`Failed to send SMS to ${customer.phone}:`, error.message);
-          
-          return {
-            customerId: customer.id,
-            customerName: customer.name,
-            phone: customer.phone,
-            status: "failed",
-            error: error.message
-          };
-        }
-      });
-
-      const messageResults = await Promise.all(messagePromises);
-      const successfulMessages = messageResults.filter(result => result.status === "sent");
-      const failedMessages = messageResults.filter(result => result.status === "failed");
+      // Generate widget code
+      const widgetCode = `<!-- LoyaltyBoost Campaign Widget -->
+<div id="loyaltyboost-widget-${campaign.id}" style="
+  border: 2px solid #3b82f6;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  font-family: system-ui, -apple-system, sans-serif;
+  max-width: 400px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+">
+  <div style="text-align: center;">
+    <h3 style="margin: 0 0 10px 0; color: #1e40af; font-size: 1.2em; font-weight: bold;">
+      🎉 ${campaign.name}
+    </h3>
+    <p style="margin: 0 0 15px 0; color: #374151; font-size: 0.9em; line-height: 1.4;">
+      ${campaign.description}
+    </p>
+    <div style="
+      background: #fef3c7;
+      border: 1px solid #f59e0b;
+      border-radius: 8px;
+      padding: 10px;
+      margin: 15px 0;
+    ">
+      <strong style="color: #92400e; font-size: 1.1em;">
+        🎁 Reward: ${campaign.rewardValue}
+      </strong>
+    </div>
+    <a href="${campaignUrl}" target="_blank" style="
+      display: inline-block;
+      background: #3b82f6;
+      color: white;
+      padding: 12px 24px;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 0.9em;
+      transition: background-color 0.2s;
+    " onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#3b82f6'">
+      📸 Participate Now
+    </a>
+    <p style="margin: 15px 0 0 0; color: #6b7280; font-size: 0.8em;">
+      ⏰ Valid until: ${new Date(campaign.endDate).toLocaleDateString()}
+    </p>
+  </div>
+</div>`;
 
       res.json({
-        message: `Bulk messages processed: ${successfulMessages.length} sent, ${failedMessages.length} failed`,
-        messagesSent: successfulMessages.length,
-        messagesFailed: failedMessages.length,
-        totalCustomers: customers.length,
-        campaignName,
-        messageContent: messageContent,
-        results: messageResults
+        campaign: {
+          id: campaign.id,
+          name: campaign.name,
+          description: campaign.description,
+          rewardValue: campaign.rewardValue,
+          endDate: campaign.endDate,
+          url: campaignUrl
+        },
+        widgetCode,
+        instructions: {
+          title: "How to Add This Widget to Your Website",
+          steps: [
+            "Copy the widget code below",
+            "Paste it into your website's HTML where you want the campaign to appear",
+            "The widget will automatically display your campaign details and link to the submission form",
+            "Customers can click 'Participate Now' to submit their photos and contact information"
+          ]
+        }
       });
     } catch (error) {
-      console.error("Bulk message error:", error);
-      res.status(500).json({ message: "Failed to send bulk messages" });
+      console.error("Widget generation error:", error);
+      res.status(500).json({ message: "Failed to generate widget code" });
     }
   });
 

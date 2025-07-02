@@ -102,9 +102,19 @@ Implements PostgreSQL database storage (`DatabaseStorage`) using Drizzle ORM wit
 
 ## Recent Changes
 
+**July 2, 2025** - Migration to Replit environment and SMS removal:
+- Successfully migrated project from Replit Agent to standard Replit environment
+- Created PostgreSQL database and established all table schemas
+- Completely removed SMS/Twilio functionality as requested by user
+- Replaced bulk messaging with campaign widget generator
+- Added website widget feature allowing admins to generate HTML code for embedding campaigns
+- Widget includes responsive design with campaign details, rewards, and direct participation links
+- Fixed all database connection issues and API endpoints now working properly
+- Project now runs cleanly with proper client/server separation and security practices
+
 **June 16, 2025** - Added customer management system and PostgreSQL database:
 - Migrated from in-memory storage to PostgreSQL database using Drizzle ORM
-- New customers database table with name, phone, email fields
+- New customers database table with name, phone, email fields  
 - Customer API endpoints for CRUD operations and bulk CSV import
 - Customers tab in admin dashboard with manual entry form
 - CSV import functionality with duplicate handling
