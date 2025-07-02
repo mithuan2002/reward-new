@@ -37,7 +37,7 @@ class EmailService {
       }
     };
 
-    this.transporter = nodemailer.createTransporter(config);
+    this.transporter = nodemailer.createTransport(config);
   }
 
   async sendBulkEmail(data: BulkEmailData): Promise<{ sent: number; failed: string[] }> {
