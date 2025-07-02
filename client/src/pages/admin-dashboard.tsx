@@ -3,6 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { apiRequest } from "@/lib/api";
 import Navigation from "@/components/navigation";
+import FlyerGenerator from "@/components/flyer-generator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,7 +31,8 @@ import {
   Check,
   X,
   ZoomIn,
-  Code
+  Code,
+  Share2
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -149,6 +151,8 @@ export default function AdminDashboard() {
   const [selectedCampaignWidget, setSelectedCampaignWidget] = useState<Campaign | null>(null);
   const [isWidgetModalOpen, setIsWidgetModalOpen] = useState(false);
   const [widgetCode, setWidgetCode] = useState("");
+  const [selectedCampaignFlyer, setSelectedCampaignFlyer] = useState<Campaign | null>(null);
+  const [isFlyerModalOpen, setIsFlyerModalOpen] = useState(false);
 
   const generateWidgetMutation = useMutation({
     mutationFn: async (campaignId: number) => {
@@ -285,6 +289,11 @@ export default function AdminDashboard() {
   const handleGenerateWidget = (campaign: Campaign) => {
     setSelectedCampaignWidget(campaign);
     generateWidgetMutation.mutate(campaign.id);
+  };
+
+  const handleGenerateFlyer = (campaign: Campaign) => {
+    setSelectedCampaignFlyer(campaign);
+    setIsFlyerModalOpen(true);
   };
 
   const copyWidgetToClipboard = () => {
@@ -534,8 +543,8 @@ export default function AdminDashboard() {
                       </Button>
                     </div>
                     
-                    {/* Widget Generator Button */}
-                    <div className="mt-3">
+                    {/* Action Buttons */}
+                    <div className="mt-3 space-y-2">
                       <Button
                         className="w-full bg-purple-600 hover:bg-purple-700"
                         size="sm"
@@ -547,6 +556,15 @@ export default function AdminDashboard() {
                           ? "Generating Widget..." 
                           : "Get Website Widget"
                         }
+                      </Button>
+                      
+                      <Button
+                        className="w-full bg-orange-600 hover:bg-orange-700"
+                        size="sm"
+                        onClick={() => handleGenerateFlyer(campaign)}
+                      >
+                        <Share2 size={16} className="mr-2" />
+                        Create Campaign Flyer
                       </Button>
                     </div>
                   </CardContent>
@@ -1109,6 +1127,22 @@ export default function AdminDashboard() {
                 </ul>
               </div>
             </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Flyer Generator Modal */}
+      <Dialog open={isFlyerModalOpen} onOpenChange={setIsFlyerModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Campaign Flyer Generator</DialogTitle>
+            <DialogDescription>
+              Create promotional flyers for your campaign with QR codes and share them on social media
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedCampaignFlyer && (
+            <FlyerGenerator campaign={selectedCampaignFlyer} />
           )}
         </DialogContent>
       </Dialog>
