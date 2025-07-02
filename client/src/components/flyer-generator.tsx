@@ -103,7 +103,7 @@ export default function FlyerGenerator({ campaign }: FlyerGeneratorProps) {
         </text>
         
         <!-- QR Code -->
-        <image x="150" y="530" width="100" height="100" href="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(campaignUrl)}&bgcolor=ffffff&color=000000" />
+        <image x="150" y="530" width="100" height="100" href="https://api.qrserver.com/v1/create-qr-code/?size=100x100&amp;data=${encodeURIComponent(campaignUrl)}&amp;bgcolor=ffffff&amp;color=000000" />
         <text x="200" y="650" text-anchor="middle" fill="${style.textColor}" font-family="Arial, sans-serif" font-size="11">
           📱 Scan QR Code to Join
         </text>

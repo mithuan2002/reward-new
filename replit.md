@@ -102,6 +102,14 @@ Implements PostgreSQL database storage (`DatabaseStorage`) using Drizzle ORM wit
 
 ## Recent Changes
 
+**July 2, 2025** - Customer flyer generator and QR code integration:
+- Added customer flyer generator feature with three templates (Modern, Classic, Fun)
+- Integrated QR codes that link directly to campaign participation forms
+- Created tabbed interface for customers: "Participate" and "Share Campaign"
+- Flyers include campaign details, rewards, QR codes, and call-to-action buttons
+- Customers can download SVG flyers and copy share text for social media
+- Fixed widget generator HTML code generation and API response parsing
+
 **July 2, 2025** - Migration to Replit environment and SMS removal:
 - Successfully migrated project from Replit Agent to standard Replit environment
 - Created PostgreSQL database and established all table schemas
