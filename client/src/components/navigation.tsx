@@ -72,15 +72,7 @@ export default function Navigation({ activeTab, onTabChange }: NavigationProps) 
               <span>Customers</span>
             </Button>
 
-            <Button
-              variant={activeTab === "bulk-email" ? "default" : "ghost"}
-              size="sm"
-              onClick={() => onTabChange("bulk-email")}
-              className="flex items-center space-x-2"
-            >
-              <Mail size={16} />
-              <span>Bulk Email</span>
-            </Button>
+
 
             <div className="flex items-center space-x-3 ml-4 pl-4 border-l border-slate-200">
               {userData && (

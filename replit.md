@@ -132,7 +132,7 @@ Implements PostgreSQL database storage (`DatabaseStorage`) using Drizzle ORM wit
 - **Campaign Integration**: Flyers automatically include campaign details and rewards
 
 ### Email Communication System
-- **Bulk Email Campaigns**: Send promotional emails to customer segments (Currently disabled in UI)
+- **Bulk Email Campaigns**: Send promotional emails to customer segments (Currently hidden from UI)
 - **SMTP Integration**: Configurable email service with authentication
 - **Email Templates**: Professional email templates with campaign details
 - **Delivery Tracking**: Monitor email send success and failure rates
