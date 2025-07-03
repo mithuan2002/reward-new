@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import AdminDashboard from "@/pages/admin-dashboard";
 import CustomerForm from "@/pages/customer-form";
 import AuthPage from "@/pages/auth";
+import SignupPage from "@/pages/signup";
 import NotFound from "@/pages/not-found";
 import LandingPage from "@/pages/landing";
 import "./index.css";
@@ -27,6 +28,7 @@ function Router() {
       <Route path="/" component={LandingPage} />
       <Route path="/admin" component={() => <ProtectedRoute component={AdminDashboard} />} />
       <Route path="/auth" component={AuthPage} />
+      <Route path="/signup" component={SignupPage} />
       <Route path="/c/:uniqueUrl" component={CustomerForm} />
       <Route component={NotFound} />
     </Switch>

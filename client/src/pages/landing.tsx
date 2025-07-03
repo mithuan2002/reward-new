@@ -24,7 +24,7 @@ export default function LandingPage() {
                   Login
                 </Button>
               </Link>
-              <Link href="/auth">
+              <Link href="/signup">
                 <Button size="sm">
                   Get Started
                 </Button>
@@ -50,7 +50,7 @@ export default function LandingPage() {
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-            <Link href="/auth">
+            <Link href="/signup">
               <Button size="lg" className="flex items-center space-x-2">
                 <span>Start Free Trial</span>
                 <ArrowRight size={18} />
@@ -221,7 +221,7 @@ export default function LandingPage() {
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/auth">
+            <Link href="/signup">
               <Button size="lg" className="bg-white text-slate-900 hover:bg-slate-100">
                 Start Your Free Trial
               </Button>
