@@ -37,13 +37,15 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
-          <Badge variant="secondary" className="mb-4">
-            Customer Engagement Platform
-          </Badge>
+          <div className="text-center mb-8">
+            <h1 className="text-6xl font-bold text-slate-900 mb-6">
+              Nambi
+            </h1>
+          </div>
           
-          <h1 className="text-5xl font-bold text-slate-900 mb-6">
+          <h2 className="text-4xl font-bold text-slate-900 mb-6">
             Build Lasting Relationships with Your Customers
-          </h1>
+          </h2>
           
           <p className="text-xl text-slate-600 mb-8 max-w-2xl mx-auto">
             Create photo-based loyalty campaigns that engage customers, collect valuable content, and drive repeat business. Simple to set up, powerful to use.
@@ -56,9 +58,6 @@ export default function LandingPage() {
                 <ArrowRight size={18} />
               </Button>
             </Link>
-            <Button variant="outline" size="lg" className="flex items-center space-x-2">
-              <span>Watch Demo</span>
-            </Button>
           </div>
           
           <div className="flex items-center justify-center space-x-8 text-sm text-slate-500">
@@ -226,9 +225,6 @@ export default function LandingPage() {
                 Start Your Free Trial
               </Button>
             </Link>
-            <Button variant="outline" size="lg" className="border-white text-white hover:bg-white hover:text-slate-900">
-              Schedule a Demo
-            </Button>
           </div>
         </div>
       </section>
