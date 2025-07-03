@@ -55,11 +55,61 @@
 @layer base {
   * {
     @apply border-border;
+    /* Improve mobile touch targets */
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
   }
 
   body {
     @apply font-sans antialiased bg-slate-50 text-slate-900;
     font-family: 'Inter', sans-serif;
+    /* Mobile performance optimizations */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    /* Prevent zoom on mobile */
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    /* Smooth scrolling */
+    scroll-behavior: smooth;
+    /* Improve mobile rendering */
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Mobile-specific styles */
+  @media (max-width: 768px) {
+    body {
+      /* Reduce font smoothing for better mobile performance */
+      -webkit-font-smoothing: subpixel-antialiased;
+    }
+  }
+
+  /* Enable text selection for specific elements */
+  input, textarea, [contenteditable] {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+  }
+
+  /* Improve button touch targets on mobile */
+  button, [role="button"], a {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+    -webkit-touch-callout: none;
+    /* Ensure minimum touch target size */
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Smooth transitions for app-like feel */
+  * {
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, fill 0.2s ease, stroke 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, filter 0.2s ease, backdrop-filter 0.2s ease;
   }
 }
 
@@ -106,5 +156,63 @@
   
   .hover\:bg-brand-emerald\/90:hover {
     background-color: hsl(160, 84%, 35%);
+  }
+
+  /* Mobile-specific utilities */
+  .mobile-touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .mobile-safe-area {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  .mobile-safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .mobile-safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Smooth momentum scrolling for mobile */
+  .momentum-scroll {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+
+  /* Hardware acceleration for better performance */
+  .gpu-accelerated {
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    will-change: transform;
+  }
+
+  /* Prevent text scaling on mobile */
+  .no-text-scaling {
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+  }
+
+  /* Mobile-friendly hover states */
+  @media (hover: hover) {
+    .hover-desktop:hover {
+      opacity: 0.8;
+    }
+  }
+
+  /* Touch-friendly active states */
+  .touch-active:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+  }
+
+  /* Optimize font rendering for mobile */
+  .mobile-font-render {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
 }
