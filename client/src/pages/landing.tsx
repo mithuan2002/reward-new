@@ -43,10 +43,6 @@ export default function LandingPage() {
             </h1>
           </div>
           
-          <h2 className="text-4xl font-bold text-slate-900 mb-6">
-            Build Lasting Relationships with Your Customers
-          </h2>
-          
           <p className="text-xl text-slate-600 mb-8 max-w-2xl mx-auto">
             Turn Moments into Memories. And Customers into Fans
           </p>
