@@ -38,19 +38,16 @@ export default function LandingPage() {
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
           <div className="text-center mb-8">
-            <div className="flex items-center justify-center space-x-4 mb-6">
-              <div className="w-16 h-16 brand-gradient rounded-full flex items-center justify-center">
-                <Gift className="text-white" size={32} />
-              </div>
-              <h1 className="text-6xl font-bold text-slate-900">
-                Nambi
-              </h1>
-            </div>
+            <h1 className="text-6xl font-bold text-slate-900 mb-8">
+              Nambi
+            </h1>
           </div>
           
-          <p className="text-xl text-slate-600 mb-8 max-w-2xl mx-auto">
-            Turn Moments into Memories. And Customers into Fans
-          </p>
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-slate-900 mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              Turn Moments into Memories. And Customers into Fans
+            </h2>
+          </div>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
             <Link href="/signup">
