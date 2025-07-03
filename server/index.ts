@@ -62,7 +62,9 @@ app.use((req, res, next) => {
 
   // Use Railway's PORT environment variable or fallback to 5000 for local development
   const port = Number(process.env.PORT) || 5000;
-  server.listen(port, () => {
-    log(`serving on port ${port}`);
+  const host = process.env.NODE_ENV === 'production' ? '0.0.0.0' : 'localhost';
+  
+  server.listen(port, host, () => {
+    log(`serving on ${host}:${port}`);
   });
 })();
