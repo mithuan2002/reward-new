@@ -1,0 +1,14 @@
+app:
+  name: nambi
+  services:
+    - name: web
+      type: web
+      build:
+        type: buildpack
+      run_command: npm start
+      ports:
+        - port: 5000
+          protocol: http
+      env:
+        - key: NODE_ENV
+          value: production
