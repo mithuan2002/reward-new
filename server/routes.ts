@@ -507,7 +507,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         activeCampaigns: campaigns.filter(c => c.status === "active").length,
         totalSubmissions: submissions.length,
         totalCustomers: customers.length,
-        avgEngagement: 73, // This could be calculated based on actual data
       };
       
       res.json(stats);

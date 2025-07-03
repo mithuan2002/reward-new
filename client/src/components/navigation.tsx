@@ -4,8 +4,8 @@ import { Gift, BarChart3, Users, FileText, UserPlus, Mail, Menu, X } from "lucid
 import { useState } from "react";
 
 type NavigationProps = {
-  activeTab: "dashboard" | "campaigns" | "submissions" | "customers" | "bulk-email";
-  onTabChange: (tab: "dashboard" | "campaigns" | "submissions" | "customers" | "bulk-email") => void;
+  activeTab: "dashboard" | "campaigns" | "submissions" | "customers";
+  onTabChange: (tab: "dashboard" | "campaigns" | "submissions" | "customers") => void;
 };
 
 export default function Navigation({ activeTab, onTabChange }: NavigationProps) {
@@ -16,7 +16,6 @@ export default function Navigation({ activeTab, onTabChange }: NavigationProps) 
     { id: "campaigns", label: "Campaigns", icon: Gift },
     { id: "submissions", label: "Submissions", icon: FileText },
     { id: "customers", label: "Customers", icon: Users },
-    { id: "bulk-email", label: "Bulk Email", icon: Mail },
   ];
 
   const handleTabClick = (tab: typeof activeTab) => {

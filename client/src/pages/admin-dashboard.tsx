@@ -35,7 +35,7 @@ import {
   Share2
 } from "lucide-react";
 import { format } from "date-fns";
-import { BulkMailer } from "../components/bulk-mailer";
+
 
 type Campaign = {
   id: number;
@@ -65,11 +65,10 @@ type DashboardStats = {
   totalCampaigns: number;
   activeCampaigns: number;
   totalSubmissions: number;
-  avgEngagement: number;
 };
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<"dashboard" | "campaigns" | "submissions" | "customers" | "bulk-email">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "campaigns" | "submissions" | "customers">("dashboard");
   const [showCampaignForm, setShowCampaignForm] = useState(false);
   const [showCustomerForm, setShowCustomerForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -376,19 +375,7 @@ export default function AdminDashboard() {
                   </div>
                 </CardContent>
               </Card>
-              <Card className="touch-active">
-                <CardContent className="p-3 sm:p-6">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-500 rounded-lg flex items-center justify-center">
-                      <Heart className="text-white" size={16} />
-                    </div>
-                    <div>
-                      <p className="text-xs sm:text-sm text-slate-600">Engagement</p>
-                      <p className="text-lg sm:text-2xl font-bold text-slate-900">{stats?.avgEngagement || 0}%</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+
             </div>
 
             {/* Recent Activity */}
@@ -870,10 +857,7 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* Bulk Email Tab */}
-        {activeTab === "bulk-email" && (
-          <BulkMailer />
-        )}
+
 
         {/* Customers Tab */}
         {activeTab === "customers" && (

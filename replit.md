@@ -154,13 +154,14 @@ Implements PostgreSQL database storage (`DatabaseStorage`) using Drizzle ORM wit
 
 ## Recent Changes
 
-**July 3, 2025** - Landing Page Creation and Navigation Updates:
+**July 3, 2025** - Landing Page Creation and Dashboard Cleanup:
 - Removed tagline from navigation for cleaner branding
 - Created comprehensive landing page with clear value proposition
 - Updated routing: landing page now serves as home page (/) while admin dashboard moved to /admin
 - Added feature showcase, 3-step process explanation, and strong call-to-action sections
 - Implemented modern gradient design with professional styling
-- Hidden bulk email feature from navigation as requested by user
+- Hidden bulk email feature completely from navigation and dashboard
+- Removed engagement metrics from dashboard for simplified 3-card layout (Total Campaigns, Active, Submissions)
 
 **January 2, 2025** - Bulk Email System Implementation:
 - Added nodemailer integration for bulk email campaigns
