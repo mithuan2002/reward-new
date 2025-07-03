@@ -7,6 +7,7 @@ import AdminDashboard from "@/pages/admin-dashboard";
 import CustomerForm from "@/pages/customer-form";
 import AuthPage from "@/pages/auth";
 import NotFound from "@/pages/not-found";
+import LandingPage from "@/pages/landing";
 import "./index.css";
 
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
@@ -23,7 +24,7 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={() => <ProtectedRoute component={AdminDashboard} />} />
+      <Route path="/" component={LandingPage} />
       <Route path="/admin" component={() => <ProtectedRoute component={AdminDashboard} />} />
       <Route path="/auth" component={AuthPage} />
       <Route path="/c/:uniqueUrl" component={CustomerForm} />

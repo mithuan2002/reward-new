@@ -26,7 +26,6 @@ export default function Navigation({ activeTab, onTabChange }: NavigationProps) 
               </div>
               <div>
                 <span className="text-xl font-bold text-slate-900">Nambi</span>
-                <p className="text-xs text-slate-600 -mt-1">Build everlasting relationship with your customers</p>
               </div>
             </div>
           </div>
