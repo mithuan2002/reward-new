@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Gift, BarChart3, Users, FileText, UserPlus, Mail, Menu, X } from "lucide-react";
@@ -106,7 +105,7 @@ export default function Navigation({ activeTab, onTabChange }: NavigationProps) 
               </div>
               <span className="text-xl font-bold text-slate-900">Nambi</span>
             </div>
-            
+
             <nav className="flex items-center space-x-1">
               {navItems.map((item) => {
                 const Icon = item.icon;
