@@ -48,7 +48,7 @@ export default function LandingPage() {
           </h2>
           
           <p className="text-xl text-slate-600 mb-8 max-w-2xl mx-auto">
-            Create photo-based loyalty campaigns that engage customers, collect valuable content, and drive repeat business. Simple to set up, powerful to use.
+            Turn Moments into Memories. And Customers into Fans
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
