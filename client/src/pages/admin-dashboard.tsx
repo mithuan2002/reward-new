@@ -323,16 +323,72 @@ export default function AdminDashboard() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 mobile-font-render">
       <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
         {/* Dashboard Tab */}
         {activeTab === "dashboard" && (
           <div>
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold text-slate-900 mb-2">Dashboard Overview</h1>
-              <p className="text-slate-600">Monitor your customer engagement campaigns and submissions</p>
+            <div className="mb-6 sm:mb-8">
+              <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2 px-2 sm:px-0">Dashboard Overview</h1>
+              <p className="text-slate-600 px-2 sm:px-0 text-sm sm:text-base">Monitor your customer engagement campaigns and submissions</p>
+            </div>
+
+            {/* Mobile-optimized stats cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8 px-2 sm:px-0">
+              <Card className="touch-active">
+                <CardContent className="p-3 sm:p-6">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 brand-gradient rounded-lg flex items-center justify-center">
+                      <TrendingUp className="text-white" size={16} />
+                    </div>
+                    <div>
+                      <p className="text-xs sm:text-sm text-slate-600">Total Campaigns</p>
+                      <p className="text-lg sm:text-2xl font-bold text-slate-900">{stats?.totalCampaigns || 0}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="touch-active">
+                <CardContent className="p-3 sm:p-6">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-green-500 rounded-lg flex items-center justify-center">
+                      <Play className="text-white" size={16} />
+                    </div>
+                    <div>
+                      <p className="text-xs sm:text-sm text-slate-600">Active</p>
+                      <p className="text-lg sm:text-2xl font-bold text-slate-900">{stats?.activeCampaigns || 0}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="touch-active">
+                <CardContent className="p-3 sm:p-6">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+                      <Users className="text-white" size={16} />
+                    </div>
+                    <div>
+                      <p className="text-xs sm:text-sm text-slate-600">Submissions</p>
+                      <p className="text-lg sm:text-2xl font-bold text-slate-900">{stats?.totalSubmissions || 0}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="touch-active">
+                <CardContent className="p-3 sm:p-6">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-500 rounded-lg flex items-center justify-center">
+                      <Heart className="text-white" size={16} />
+                    </div>
+                    <div>
+                      <p className="text-xs sm:text-sm text-slate-600">Engagement</p>
+                      <p className="text-lg sm:text-2xl font-bold text-slate-900">{stats?.avgEngagement || 0}%</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
 
             {/* Recent Activity */}
@@ -370,14 +426,15 @@ export default function AdminDashboard() {
         {/* Campaigns Tab */}
         {activeTab === "campaigns" && (
           <div>
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <h1 className="text-3xl font-bold text-slate-900 mb-2">Campaign Management</h1>
-                <p className="text-slate-600">Create and manage your loyalty reward campaigns</p>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8 px-2 sm:px-0">
+              <div className="mb-4 sm:mb-0">
+                <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">Campaign Management</h1>
+                <p className="text-slate-600 text-sm sm:text-base">Create and manage your loyalty reward campaigns</p>
               </div>
               <Button 
                 onClick={() => setShowCampaignForm(!showCampaignForm)}
-                className="bg-blue-600 hover:bg-blue-700"
+                className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto touch-active"
+                size="lg"
               >
                 <Plus size={16} className="mr-2" />
                 Create Campaign
@@ -467,7 +524,7 @@ export default function AdminDashboard() {
             )}
 
             {/* Existing Campaigns */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 px-2 sm:px-0">
               {campaigns.map((campaign) => (
                 <Card key={campaign.id}>
                   <CardContent className="p-6">
@@ -578,10 +635,10 @@ export default function AdminDashboard() {
         {/* Submissions Tab */}
         {activeTab === "submissions" && (
           <div>
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <h1 className="text-3xl font-bold text-slate-900 mb-2">Customer Submissions</h1>
-                <p className="text-slate-600">Review and manage all customer submissions across campaigns</p>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8 px-2 sm:px-0">
+              <div className="mb-4 sm:mb-0">
+                <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">Customer Submissions</h1>
+                <p className="text-slate-600 text-sm sm:text-base">Review and manage all customer submissions across campaigns</p>
               </div>
               <div className="flex items-center space-x-4">
                 <Select value={selectedCampaign} onValueChange={setSelectedCampaign}>
@@ -624,12 +681,61 @@ export default function AdminDashboard() {
             </Card>
 
             {/* Submissions Table */}
-            <Card>
+            <Card className="mx-2 sm:mx-0">
               <CardHeader>
-                <CardTitle>Recent Submissions</CardTitle>
+                <CardTitle className="text-lg sm:text-xl">Recent Submissions</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
+              <CardContent className="p-0 sm:p-6">
+                {/* Mobile Card View */}
+                <div className="sm:hidden">
+                  {filteredSubmissions.map((submission) => (
+                    <div key={submission.id} className="border-b border-slate-200 p-4 touch-active">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 brand-gradient rounded-full flex items-center justify-center text-white font-medium text-sm">
+                            {submission.customerName.split(' ').map(n => n[0]).join('')}
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-slate-900">{submission.customerName}</div>
+                            <div className="text-xs text-slate-500">{submission.phone}</div>
+                          </div>
+                        </div>
+                        <Badge className={getStatusColor(submission.status)}>
+                          {submission.status.charAt(0).toUpperCase() + submission.status.slice(1)}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <img
+                            src={submission.imageUrl}
+                            alt="Submission"
+                            className="w-8 h-8 rounded object-cover border cursor-pointer"
+                            onClick={() => openImageModal(submission)}
+                          />
+                          <div className="text-xs text-slate-600">{submission.campaignName}</div>
+                        </div>
+                        <div className="flex space-x-1">
+                          <Button size="sm" variant="ghost" onClick={() => openImageModal(submission)}>
+                            <Eye size={14} />
+                          </Button>
+                          {submission.status === "pending" && (
+                            <>
+                              <Button size="sm" variant="ghost" className="text-green-600" onClick={() => handleApproveSubmission(submission.id)}>
+                                <Check size={14} />
+                              </Button>
+                              <Button size="sm" variant="ghost" className="text-red-500" onClick={() => handleRejectSubmission(submission.id)}>
+                                <X size={14} />
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Desktop Table View */}
+                <div className="hidden sm:block overflow-x-auto">
                   <table className="w-full">
                     <thead className="bg-slate-50">
                       <tr>
@@ -772,10 +878,10 @@ export default function AdminDashboard() {
         {/* Customers Tab */}
         {activeTab === "customers" && (
           <div>
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <h1 className="text-3xl font-bold text-slate-900 mb-2">Customer Management</h1>
-                <p className="text-slate-600">Manage your customer contact database</p>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8 px-2 sm:px-0">
+              <div className="mb-4 sm:mb-0">
+                <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">Customer Management</h1>
+                <p className="text-slate-600 text-sm sm:text-base">Manage your customer contact database</p>
               </div>
               <div className="flex items-center space-x-3">
                 <div className="relative">

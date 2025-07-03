@@ -207,6 +207,7 @@
   .touch-active:active {
     transform: scale(0.98);
     opacity: 0.9;
+    transition: transform 0.1s ease;
   }
 
   /* Optimize font rendering for mobile */
@@ -214,5 +215,45 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+  }
+
+  /* Improve scrolling performance on mobile */
+  .smooth-scroll {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+
+  /* Optimize image loading */
+  img {
+    max-width: 100%;
+    height: auto;
+    image-rendering: optimizeSpeed;
+  }
+
+  /* Prevent zoom on input focus for iOS */
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="password"],
+  textarea,
+  select {
+    font-size: 16px;
+  }
+
+  /* Improve tap targets */
+  button,
+  [role="button"],
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Reduce motion for better performance */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }

@@ -163,8 +163,8 @@ export default function CustomerForm() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-2 sm:p-4 mobile-font-render">
+      <Card className="w-full max-w-2xl max-h-[95vh] overflow-y-auto gpu-accelerated">
         <CardHeader className="border-b border-slate-200">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 brand-gradient rounded-lg flex items-center justify-center">
@@ -250,7 +250,7 @@ export default function CustomerForm() {
 
                   <Button
                     type="submit"
-                    className="w-full bg-blue-600 hover:bg-blue-700"
+                    className="w-full bg-blue-600 hover:bg-blue-700 h-12 text-base font-semibold touch-active"
                     disabled={submitMutation.isPending}
                   >
                     {submitMutation.isPending ? "Submitting..." : "Submit & Get My Reward"}

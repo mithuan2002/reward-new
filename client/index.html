@@ -2,31 +2,18 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    
-    <!-- Mobile-specific optimizations -->
-    <meta name="mobile-web-app-capable" content="yes" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content="Nambi" />
-    <meta name="theme-color" content="#3B82F6" />
-    <meta name="msapplication-TileColor" content="#3B82F6" />
-    
-    <!-- Prevent zoom on form inputs -->
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="format-detection" content="telephone=no" />
-    <meta name="format-detection" content="address=no" />
-    <meta name="format-detection" content="email=no" />
-    
-    <!-- Optimized loading -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    
-    <!-- DNS prefetch for better performance -->
-    <link rel="dns-prefetch" href="//fonts.googleapis.com" />
-    <link rel="dns-prefetch" href="//fonts.gstatic.com" />
-    
-    <title>Nambi - Turn Moments into Memories</title>
-    <meta name="description" content="Turn moments into memories and customers into fans with Nambi's customer engagement platform." />
+    <title>Nambi - Turn moments into memories</title>
+    <style>
+      /* Prevent FOUC */
+      body { visibility: hidden; }
+      body.loaded { visibility: visible; }
+    </style>
   </head>
   <body>
     <div id="root"></div>

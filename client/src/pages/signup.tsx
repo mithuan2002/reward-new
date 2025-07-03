@@ -73,7 +73,7 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-3 sm:p-4 mobile-font-render">
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
@@ -161,7 +161,7 @@ export default function SignupPage() {
 
               <Button
                 type="submit"
-                className="w-full bg-green-600 hover:bg-green-700 h-11"
+                className="w-full bg-green-600 hover:bg-green-700 h-12 text-base font-semibold touch-active"
                 disabled={signupMutation.isPending}
               >
                 {signupMutation.isPending ? "Creating Account..." : "Create Account"}
