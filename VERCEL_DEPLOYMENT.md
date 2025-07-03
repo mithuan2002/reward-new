@@ -34,7 +34,7 @@ This guide will help you deploy your app completely free using Vercel for hostin
    - **Framework Preset**: Other
    - **Root Directory**: ./
    - **Build Command**: `npm run build`
-   - **Output Directory**: dist/public
+   - **Output Directory**: Leave empty (auto-detect)
    - **Install Command**: `npm install`
 
 5. **Add Environment Variables**:
