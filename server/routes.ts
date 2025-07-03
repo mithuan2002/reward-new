@@ -35,6 +35,11 @@ const upload = multer({
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
+  // Health check endpoint for Railway
+  app.get("/health", (req, res) => {
+    res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
+  });
+  
   // Serve uploaded files
   app.use("/uploads", (req, res, next) => {
     res.sendFile(path.join(uploadsDir, req.path));

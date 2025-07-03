@@ -57,12 +57,8 @@ app.use((req, res, next) => {
   }
 
   // Use Railway's PORT environment variable or fallback to 5000 for local development
-  const port = process.env.PORT || 5000;
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
+  const port = Number(process.env.PORT) || 5000;
+  server.listen(port, () => {
     log(`serving on port ${port}`);
   });
 })();
