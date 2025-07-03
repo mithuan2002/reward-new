@@ -41,6 +41,7 @@ export const submissions = pgTable("submissions", {
 
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
+  email: true,
   password: true,
 });
 
