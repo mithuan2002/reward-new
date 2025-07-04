@@ -39,6 +39,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/health", (req, res) => {
     res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
   });
+
+  // Database connection test endpoint
+  app.get("/api/test-db", async (req, res) => {
+    try {
+      console.log("Testing database connection...");
+      const testUser = await storage.getUserByUsername("nonexistent-user");
+      console.log("Database connection successful:", testUser);
+      res.status(200).json({ 
+        status: "Database connection working", 
+        hasUser: !!testUser,
+        databaseUrl: process.env.DATABASE_URL ? "Set" : "Missing"
+      });
+    } catch (error) {
+      console.error("Database connection failed:", error);
+      res.status(500).json({ 
+        status: "Database connection failed", 
+        error: error instanceof Error ? error.message : "Unknown error",
+        databaseUrl: process.env.DATABASE_URL ? "Set" : "Missing"
+      });
+    }
+  });
   
   // Serve uploaded files
   app.use("/uploads", (req, res, next) => {
@@ -48,22 +69,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication routes
   app.post("/api/auth/signup", async (req, res) => {
     try {
+      console.log("Signup request received:", { body: req.body });
+      
       const { username, email, password } = req.body;
       
       if (!username || !email || !password) {
+        console.log("Missing required fields:", { username: !!username, email: !!email, password: !!password });
         return res.status(400).json({ message: "Username, email, and password are required" });
       }
 
       if (password.length < 6) {
+        console.log("Password too short:", password.length);
         return res.status(400).json({ message: "Password must be at least 6 characters long" });
       }
 
+      console.log("Checking if user exists...");
       // Check if user already exists
       const existingUser = await storage.getUserByUsername(username);
       if (existingUser) {
+        console.log("User already exists:", username);
         return res.status(409).json({ message: "Username already exists" });
       }
 
+      console.log("Hashing password...");
       // Hash password
       const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -74,9 +102,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         password: hashedPassword,
       };
 
+      console.log("Validating user data...");
       const validatedData = insertUserSchema.parse(userData);
+      
+      console.log("Creating user in database...");
       const user = await storage.createUser(validatedData);
 
+      console.log("User created successfully:", user.id);
       // Remove password from response
       const { password: _, ...userResponse } = user;
 
@@ -85,9 +117,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         user: userResponse,
       });
     } catch (error) {
+      console.error("Signup error:", error);
       if (error instanceof Error) {
+        console.error("Error details:", error.message, error.stack);
         res.status(400).json({ message: error.message });
       } else {
+        console.error("Unknown error:", error);
         res.status(500).json({ message: "Failed to create account" });
       }
     }

@@ -348,11 +348,24 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const [user] = await db
-      .insert(users)
-      .values(insertUser)
-      .returning();
-    return user;
+    try {
+      console.log("DatabaseStorage: Creating user with data:", { 
+        username: insertUser.username, 
+        email: insertUser.email,
+        hasPassword: !!insertUser.password 
+      });
+      
+      const [user] = await db
+        .insert(users)
+        .values(insertUser)
+        .returning();
+      
+      console.log("DatabaseStorage: User created successfully with ID:", user.id);
+      return user;
+    } catch (error) {
+      console.error("DatabaseStorage: Error creating user:", error);
+      throw error;
+    }
   }
 
   // Campaign methods
