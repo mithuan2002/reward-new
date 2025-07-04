@@ -1,12 +1,6 @@
-import { Pool, neonConfig } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import ws from "ws";
+import { Pool } from 'pg';
+import { drizzle } from 'drizzle-orm/node-postgres';
 import * as schema from "@shared/schema";
-
-// Configure for serverless environments
-if (typeof WebSocket === 'undefined') {
-  neonConfig.webSocketConstructor = ws;
-}
 
 if (!process.env.DATABASE_URL) {
   console.error("❌ DATABASE_URL environment variable is not set!");
@@ -20,5 +14,9 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-export const db = drizzle({ client: pool, schema });
+console.log("Connecting to database...");
+export const pool = new Pool({ 
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+});
+export const db = drizzle(pool, { schema });
