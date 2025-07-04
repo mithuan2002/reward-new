@@ -9,6 +9,7 @@ export async function runMigrations() {
       return;
     }
     
+    console.log("Starting database migrations...");
     await migrate(db, { migrationsFolder: "./migrations" });
     console.log("Database migrations completed successfully");
   } catch (error) {
