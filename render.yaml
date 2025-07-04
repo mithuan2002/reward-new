@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: nambi-app
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+  - type: pgsql
+    name: nambi-database
+    databaseName: nambi
+    databaseUser: nambi
