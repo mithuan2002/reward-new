@@ -55,13 +55,13 @@ app.use((req, res, next) => {
       throw err;
     });
 
-    // importantly only setup vite in development and after
-    // setting up all the other routes so the catch-all route
-    // doesn't interfere with the other routes
-    if (app.get("env") === "development") {
-      await setupVite(app, server);
-    } else {
+    // Setup serving based on environment
+    if (process.env.NODE_ENV === "production") {
+      console.log("Setting up production static file serving...");
       serveStatic(app);
+    } else {
+      console.log("Setting up development mode with Vite...");
+      await setupVite(app, server);
     }
 
     // Use Railway's PORT environment variable or fallback to 5000 for local development

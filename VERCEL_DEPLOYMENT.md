@@ -1,80 +1,74 @@
-# Free Deployment on Vercel + Neon Database
+# Vercel Deployment Guide for Nambi
 
-This guide will help you deploy your app completely free using Vercel for hosting and Neon for PostgreSQL database.
+## Steps to Deploy on Vercel
 
-## Step 1: Set Up Free Database (Neon)
+### 1. Prepare Your Repository
+Make sure all the following files are committed to your Git repository:
+- `vercel.json` (deployment configuration)
+- `api/index.js` (Vercel serverless function entry point)
+- Built files in `dist/` directory (created by `npm run build`)
 
-1. **Go to Neon**: https://neon.tech
-2. **Sign up for free** with GitHub
-3. **Create a new project**:
-   - Project name: "nambi-db"
-   - Region: Choose closest to you
-   - Click "Create Project"
-4. **Get your database URL**:
-   - Go to "Dashboard"
-   - Click "Connection Details"
-   - Copy the "Connection string" (starts with `postgresql://`)
-   - Save this URL - you'll need it for Vercel
+### 2. Build the Project
+Before deploying, run the build command to generate production files:
+```bash
+npm run build
+```
 
-## Step 2: Prepare Your Project for Vercel
+This will create:
+- `dist/public/` - Frontend build files
+- `dist/index.js` - Backend build file
 
-1. **Push your code to GitHub** (if not already done)
-2. **Make sure your repository is public** (required for Vercel free tier)
+### 3. Deploy to Vercel
 
-## Step 3: Deploy on Vercel
+#### Option 1: Using Vercel CLI
+```bash
+npx vercel
+```
 
-1. **Go to Vercel**: https://vercel.com
-2. **Sign up for free** with GitHub
-3. **Import your project**:
-   - Click "New Project"
-   - Select your GitHub repository
-   - Click "Import"
+#### Option 2: Connect GitHub Repository
+1. Go to [vercel.com](https://vercel.com)
+2. Click "Import Project"
+3. Connect your GitHub repository
+4. Vercel will automatically detect the configuration
 
-4. **Configure deployment**:
-   - **Framework Preset**: Other
-   - **Root Directory**: ./
-   - **Build Command**: `npm run build`
-   - **Output Directory**: Leave empty (auto-detect)
-   - **Install Command**: `npm install`
+### 4. Environment Variables (Optional)
+If you want to use a real database instead of in-memory storage:
+1. In Vercel dashboard, go to your project settings
+2. Add environment variables:
+   - `DATABASE_URL` - Your PostgreSQL database URL
+   - `NODE_ENV` - Set to "production"
 
-5. **Add Environment Variables**:
-   - Click "Environment Variables"
-   - Add: `DATABASE_URL` = [paste your Neon database URL]
-   - Add: `NODE_ENV` = `production`
+### 5. Verification
+After deployment, your app should be available at:
+- `https://your-project-name.vercel.app`
 
-6. **Deploy**:
-   - Click "Deploy"
-   - Wait 2-3 minutes for build to complete
+The app includes:
+- Landing page at `/`
+- Admin dashboard at `/admin`
+- Customer submission forms at `/c/[campaign-url]`
 
-## Step 4: Configure Custom Start Script
+### Troubleshooting
 
-Vercel needs a specific configuration. The deployment will create your app at a URL like:
-`https://your-project-name.vercel.app`
+#### Frontend Not Loading
+- Make sure `npm run build` was successful
+- Check that `dist/public/` contains `index.html` and `assets/` folder
+- Verify `vercel.json` routes are correctly configured
 
-## Important Notes:
+#### API Endpoints Not Working
+- Ensure `api/index.js` exists and exports the server
+- Check that `dist/index.js` was built successfully
+- Verify all routes start with `/api/`
 
-✅ **Both Vercel and Neon are completely free**
-✅ **No credit card required**
-✅ **Generous free tiers**
-✅ **Professional hosting quality**
+#### Current Configuration
+- Uses in-memory storage (data resets on deployment)
+- All uploads are stored temporarily (will be lost on restart)
+- Perfect for demo and testing purposes
 
-## Troubleshooting:
+### Production Notes
+For production use, you'll want to:
+1. Set up a persistent PostgreSQL database
+2. Configure file storage (AWS S3, Vercel Blob, etc.)
+3. Add proper error handling and logging
+4. Set up monitoring and analytics
 
-If build fails:
-1. Check build logs in Vercel dashboard
-2. Ensure DATABASE_URL is correctly set
-3. Make sure your GitHub repo has latest code
-
-## Free Tier Limits:
-
-**Vercel Free:**
-- 100GB bandwidth/month
-- 100 deployments/day
-- Custom domains included
-
-**Neon Free:**
-- 512MB storage
-- 1 database
-- No time limits
-
-These limits are more than enough for your customer loyalty app!
+Your app is now ready for deployment! 🚀
