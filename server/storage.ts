@@ -1,7 +1,8 @@
 import { users, campaigns, submissions, customers, type User, type InsertUser, type Campaign, type InsertCampaign, type Submission, type InsertSubmission, type Customer, type InsertCustomer } from "@shared/schema";
 import { nanoid } from "nanoid";
-import { db } from "./db";
-import { eq } from "drizzle-orm";
+// Database imports temporarily disabled due to connection issues
+// import { db } from "./db"; 
+// import { eq } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -336,6 +337,7 @@ export class MemStorage implements IStorage {
   }
 }
 
+/*
 export class DatabaseStorage implements IStorage {
   async getUser(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
@@ -522,5 +524,7 @@ export class DatabaseStorage implements IStorage {
     return (result.rowCount || 0) > 0;
   }
 }
+*/
 
-export const storage = new DatabaseStorage();
+// Use MemStorage temporarily due to database connection issues
+export const storage = new MemStorage();

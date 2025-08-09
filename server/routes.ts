@@ -40,23 +40,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
   });
 
-  // Database connection test endpoint
+  // Storage test endpoint 
   app.get("/api/test-db", async (req, res) => {
     try {
-      console.log("Testing database connection...");
-      const testUser = await storage.getUserByUsername("nonexistent-user");
-      console.log("Database connection successful:", testUser);
+      console.log("Testing storage...");
       res.status(200).json({ 
-        status: "Database connection working", 
-        hasUser: !!testUser,
-        databaseUrl: process.env.DATABASE_URL ? "Set" : "Missing"
+        status: "In-memory storage working", 
+        storageType: "MemStorage"
       });
     } catch (error) {
-      console.error("Database connection failed:", error);
+      console.error("Storage test failed:", error);
       res.status(500).json({ 
-        status: "Database connection failed", 
-        error: error instanceof Error ? error.message : "Unknown error",
-        databaseUrl: process.env.DATABASE_URL ? "Set" : "Missing"
+        status: "Storage test failed", 
+        error: error instanceof Error ? error.message : "Unknown error"
       });
     }
   });

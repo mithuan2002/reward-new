@@ -41,8 +41,8 @@ app.use((req, res, next) => {
   try {
     console.log("Starting application...");
     
-    // Run database migrations on startup
-    await runMigrations();
+    // Skip migrations for now to fix connection issues
+    console.log("Skipping database migrations due to connection issues...");
     
     console.log("Registering routes...");
     const server = await registerRoutes(app);
