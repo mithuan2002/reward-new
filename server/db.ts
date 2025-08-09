@@ -1,25 +1,15 @@
-import { Pool } from 'pg';
-import { drizzle } from 'drizzle-orm/node-postgres';
+
+import Database from 'better-sqlite3';
+import { drizzle } from 'drizzle-orm/better-sqlite3';
 import * as schema from "@shared/schema";
+import path from 'path';
 
-// Check if we have the DATABASE_URL available
-const databaseUrl = process.env.DATABASE_URL;
+// Create SQLite database file
+const dbPath = path.join(process.cwd(), 'database.sqlite');
+const sqlite = new Database(dbPath);
 
-if (!databaseUrl) {
-  console.error("❌ DATABASE_URL environment variable is not set!");
-  console.error("📋 To fix this:");
-  console.error("1. Open a new tab and type 'Database'");
-  console.error("2. Click 'create a database' in the Database panel");
-  console.error("3. Restart your application");
-  throw new Error("DATABASE_URL is required");
-}
+console.log("✅ Using SQLite database at:", dbPath);
 
-console.log("✅ Connecting to PostgreSQL database...");
-const pool = new Pool({ 
-  connectionString: databaseUrl,
-  ssl: false // Replit PostgreSQL doesn't require SSL
-});
+const db = drizzle(sqlite, { schema });
 
-const db = drizzle(pool, { schema });
-
-export { pool, db };
+export { db, sqlite as pool };
