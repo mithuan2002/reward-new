@@ -3,6 +3,9 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
+  const API_BASE_URL = import.meta.env.PROD 
+  ? "" 
+  : "";
   const res = await fetch(url, {
     method,
     headers: data ? { "Content-Type": "application/json" } : {},
@@ -14,6 +17,6 @@ export async function apiRequest(
     const text = (await res.text()) || res.statusText;
     throw new Error(`${res.status}: ${text}`);
   }
-  
+
   return res;
 }

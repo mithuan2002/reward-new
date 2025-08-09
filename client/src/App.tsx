@@ -30,7 +30,7 @@ function Router() {
       <Route path="/auth" component={AuthPage} />
       <Route path="/signup" component={SignupPage} />
       <Route path="/c/:uniqueUrl" component={CustomerForm} />
-      <Route component={NotFound} />
+      <Route path="*" component={NotFound} />
     </Switch>
   );
 }
