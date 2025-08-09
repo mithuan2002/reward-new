@@ -41,8 +41,10 @@ app.use((req, res, next) => {
   try {
     console.log("Starting application...");
     
-    // Use in-memory storage for development
-    console.log("Using in-memory storage for development...");
+    // Run database migrations
+    console.log("Running database migrations...");
+    const { runMigrations } = await import("./migrate");
+    await runMigrations();
     
     console.log("Registering routes...");
     const server = await registerRoutes(app);

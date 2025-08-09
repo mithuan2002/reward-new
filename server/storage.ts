@@ -1,8 +1,13 @@
 import { users, campaigns, submissions, customers, type User, type InsertUser, type Campaign, type InsertCampaign, type Submission, type InsertSubmission, type Customer, type InsertCustomer } from "@shared/schema";
 import { nanoid } from "nanoid";
 // Database imports temporarily disabled due to connection issues
-// import { db } from "./db"; 
+// import { db } from "./db";
 // import { eq } from "drizzle-orm";
+
+// Database storage is now required to be set up.
+import { db } from "./db";
+import { DatabaseStorage } from "./storage"; // Assuming DatabaseStorage is exported from './storage'
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -186,7 +191,7 @@ export class MemStorage implements IStorage {
   }
 
   async getCampaigns(): Promise<Campaign[]> {
-    return Array.from(this.campaigns.values()).sort((a, b) => 
+    return Array.from(this.campaigns.values()).sort((a, b) =>
       new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
     );
   }
@@ -236,7 +241,7 @@ export class MemStorage implements IStorage {
         ...submission,
         campaignName: campaign?.name || "Unknown Campaign"
       };
-    }).sort((a, b) => 
+    }).sort((a, b) =>
       new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
     );
   }
@@ -244,7 +249,7 @@ export class MemStorage implements IStorage {
   async getSubmissionsByCampaign(campaignId: number): Promise<Submission[]> {
     return Array.from(this.submissions.values())
       .filter(submission => submission.campaignId === campaignId)
-      .sort((a, b) => 
+      .sort((a, b) =>
         new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
       );
   }
@@ -276,7 +281,7 @@ export class MemStorage implements IStorage {
 
   // Customer methods
   async getCustomers(): Promise<Customer[]> {
-    return Array.from(this.customers.values()).sort((a, b) => 
+    return Array.from(this.customers.values()).sort((a, b) =>
       new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
     );
   }
@@ -351,10 +356,10 @@ export class DatabaseStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     try {
-      console.log("DatabaseStorage: Creating user with data:", { 
-        username: insertUser.username, 
+      console.log("DatabaseStorage: Creating user with data:", {
+        username: insertUser.username,
         email: insertUser.email,
-        hasPassword: !!insertUser.password 
+        hasPassword: !!insertUser.password
       });
 
       const [user] = await db
@@ -526,6 +531,8 @@ export class DatabaseStorage implements IStorage {
 }
 */
 
-// Use in-memory storage to avoid database connection issues
-console.log("💾 Using in-memory storage (MemStorage) - this fixes the 500 error");
-export const storage = new MemStorage();
+// Always use database storage - no fallback
+if (!db) {
+  throw new Error("Database connection is required. Please set up PostgreSQL database.");
+}
+export const storage = new DatabaseStorage(db);
