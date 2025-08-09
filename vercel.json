@@ -9,6 +9,18 @@
       }
     },
     {
+      "src": "api/ping.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/hello.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/signup.js",
+      "use": "@vercel/node"
+    },
+    {
       "src": "api/test.js",
       "use": "@vercel/node"
     },
@@ -19,9 +31,26 @@
     {
       "src": "api/index.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "api/simple.js",
+      "use": "@vercel/node"
     }
   ],
+  "functions": {
+    "api/*.js": {
+      "runtime": "nodejs20.x"
+    }
+  },
   "routes": [
+    {
+      "src": "/api/simple",
+      "dest": "/api/simple.js"
+    },
+    {
+      "src": "/api/ping",
+      "dest": "/api/ping.js"
+    },
     {
       "src": "/api/hello",
       "dest": "/api/hello.js"
