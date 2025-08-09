@@ -1,12 +1,7 @@
 import { users, campaigns, submissions, customers, type User, type InsertUser, type Campaign, type InsertCampaign, type Submission, type InsertSubmission, type Customer, type InsertCustomer } from "@shared/schema";
 import { nanoid } from "nanoid";
-// Database imports temporarily disabled due to connection issues
-// import { db } from "./db";
-// import { eq } from "drizzle-orm";
-
-// Database storage is now required to be set up.
+// Database imports
 import { db } from "./db";
-import { DatabaseStorage } from "./storage"; // Assuming DatabaseStorage is exported from './storage'
 import { eq } from "drizzle-orm";
 
 export interface IStorage {
@@ -342,7 +337,6 @@ export class MemStorage implements IStorage {
   }
 }
 
-/*
 export class DatabaseStorage implements IStorage {
   async getUser(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
@@ -529,10 +523,9 @@ export class DatabaseStorage implements IStorage {
     return (result.rowCount || 0) > 0;
   }
 }
-*/
 
 // Always use database storage - no fallback
 if (!db) {
   throw new Error("Database connection is required. Please set up PostgreSQL database.");
 }
-export const storage = new DatabaseStorage(db);
+export const storage = new DatabaseStorage();
