@@ -1,4 +1,3 @@
-
 const express = require('express');
 const path = require('path');
 const bcrypt = require('bcrypt');
@@ -9,6 +8,19 @@ const app = express();
 // Basic middleware
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../dist/public')));
+
+// Handle CORS for Vercel
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+});
 
 // Sample data for demo
 const campaigns = [
@@ -36,8 +48,8 @@ app.get('/health', (req, res) => {
 
 // Test DB endpoint
 app.get('/api/test-db', (req, res) => {
-  res.status(200).json({ 
-    status: 'In-memory storage working perfectly', 
+  res.status(200).json({
+    status: 'In-memory storage working perfectly',
     storageType: 'MemStorage',
     campaignCount: campaigns.length
   });
@@ -47,9 +59,9 @@ app.get('/api/test-db', (req, res) => {
 app.post('/api/auth/signup', async (req, res) => {
   try {
     console.log('Signup request received:', { body: req.body });
-    
+
     const { username, email, password } = req.body;
-    
+
     if (!username || !email || !password) {
       console.log('Missing required fields:', { username: !!username, email: !!email, password: !!password });
       return res.status(400).json({ message: 'Username, email, and password are required' });
@@ -107,7 +119,7 @@ app.post('/api/auth/signup', async (req, res) => {
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { username, password } = req.body;
-    
+
     if (!username || !password) {
       return res.status(400).json({ message: 'Username and password are required' });
     }
@@ -182,13 +194,13 @@ app.patch('/api/campaigns/:id', (req, res) => {
   if (campaignIndex === -1) {
     return res.status(404).json({ message: 'Campaign not found' });
   }
-  
+
   campaigns[campaignIndex] = {
     ...campaigns[campaignIndex],
     ...req.body,
     updatedAt: new Date().toISOString()
   };
-  
+
   res.json(campaigns[campaignIndex]);
 });
 
@@ -198,7 +210,7 @@ app.delete('/api/campaigns/:id', (req, res) => {
   if (campaignIndex === -1) {
     return res.status(404).json({ message: 'Campaign not found' });
   }
-  
+
   campaigns.splice(campaignIndex, 1);
   res.status(204).send();
 });
@@ -207,7 +219,7 @@ app.delete('/api/campaigns/:id', (req, res) => {
 app.get('/api/submissions', (req, res) => {
   const { campaignId } = req.query;
   let filteredSubmissions = submissions;
-  
+
   if (campaignId) {
     filteredSubmissions = submissions.filter(sub => sub.campaignId === parseInt(campaignId));
     // Add campaign name
@@ -219,7 +231,7 @@ app.get('/api/submissions', (req, res) => {
       };
     });
   }
-  
+
   res.json(filteredSubmissions);
 });
 
@@ -238,7 +250,7 @@ app.post('/api/submissions', (req, res) => {
 app.patch('/api/submissions/:id/status', (req, res) => {
   const id = parseInt(req.params.id);
   const { status } = req.body;
-  
+
   if (!status || !['pending', 'approved', 'rejected'].includes(status)) {
     return res.status(400).json({ message: 'Valid status is required' });
   }
@@ -263,7 +275,7 @@ app.delete('/api/submissions/:id', (req, res) => {
   if (submissionIndex === -1) {
     return res.status(404).json({ message: 'Submission not found' });
   }
-  
+
   submissions.splice(submissionIndex, 1);
   res.status(204).send();
 });
@@ -292,7 +304,7 @@ app.post('/api/customers', (req, res) => {
 
 app.post('/api/customers/bulk', (req, res) => {
   const { customers: newCustomers } = req.body;
-  
+
   if (!Array.isArray(newCustomers) || newCustomers.length === 0) {
     return res.status(400).json({ message: 'Customers array is required' });
   }
@@ -312,9 +324,9 @@ app.post('/api/customers/bulk', (req, res) => {
     }
   });
 
-  res.status(201).json({ 
+  res.status(201).json({
     message: `Successfully processed ${createdCustomers.length} customers`,
-    customers: createdCustomers 
+    customers: createdCustomers
   });
 });
 
@@ -324,13 +336,13 @@ app.put('/api/customers/:id', (req, res) => {
   if (customerIndex === -1) {
     return res.status(404).json({ message: 'Customer not found' });
   }
-  
+
   customers[customerIndex] = {
     ...customers[customerIndex],
     ...req.body,
     updatedAt: new Date().toISOString()
   };
-  
+
   res.json(customers[customerIndex]);
 });
 
@@ -340,7 +352,7 @@ app.delete('/api/customers/:id', (req, res) => {
   if (customerIndex === -1) {
     return res.status(404).json({ message: 'Customer not found' });
   }
-  
+
   customers.splice(customerIndex, 1);
   res.status(204).send();
 });
@@ -353,7 +365,7 @@ app.get('/api/dashboard/stats', (req, res) => {
     totalSubmissions: submissions.length,
     totalCustomers: customers.length,
   };
-  
+
   res.json(stats);
 });
 
@@ -361,7 +373,7 @@ app.get('/api/dashboard/stats', (req, res) => {
 app.get('/api/campaigns/:id/widget', (req, res) => {
   const campaignId = parseInt(req.params.id);
   const campaign = campaigns.find(c => c.id === campaignId);
-  
+
   if (!campaign) {
     return res.status(404).json({ message: 'Campaign not found' });
   }

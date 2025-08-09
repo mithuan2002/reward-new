@@ -1,6 +1,10 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import { db } from "./db";
 import { storage } from "./storage";
+
+// Check if database is available
+const isDatabaseAvailable = () => !!db;
 import { emailService } from "./email";
 import { insertCampaignSchema, insertSubmissionSchema, insertCustomerSchema, insertUserSchema } from "@shared/schema";
 import multer from "multer";
@@ -34,7 +38,7 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  
+
   // Health check endpoint for Railway
   app.get("/health", (req, res) => {
     res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
@@ -59,7 +63,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
-  
+
   // Serve uploaded files
   app.use("/uploads", (req, res, next) => {
     res.sendFile(path.join(uploadsDir, req.path));
@@ -69,9 +73,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/signup", async (req, res) => {
     try {
       console.log("Signup request received:", { body: req.body });
-      
+
       const { username, email, password } = req.body;
-      
+
       if (!username || !email || !password) {
         console.log("Missing required fields:", { username: !!username, email: !!email, password: !!password });
         return res.status(400).json({ message: "Username, email, and password are required" });
@@ -103,7 +107,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log("Validating user data...");
       const validatedData = insertUserSchema.parse(userData);
-      
+
       console.log("Creating user in database...");
       const user = await storage.createUser(validatedData);
 
@@ -130,7 +134,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/login", async (req, res) => {
     try {
       const { username, password } = req.body;
-      
+
       if (!username || !password) {
         return res.status(400).json({ message: "Username and password are required" });
       }
@@ -253,7 +257,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { campaignId } = req.query;
       let submissions;
-      
+
       if (campaignId) {
         submissions = await storage.getSubmissionsByCampaign(parseInt(campaignId as string));
         // Add campaign name for consistency
@@ -265,7 +269,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         submissions = await storage.getSubmissions();
       }
-      
+
       res.json(submissions);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch submissions" });
@@ -279,7 +283,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { campaignId, customerName, phone } = req.body;
-      
+
       // Validate required fields
       if (!campaignId || !customerName || !phone) {
         return res.status(400).json({ message: "Campaign ID, customer name, and phone are required" });
@@ -295,7 +299,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const fileExtension = path.extname(req.file.originalname);
       const newFileName = `${req.file.filename}${fileExtension}`;
       const newFilePath = path.join(uploadsDir, newFileName);
-      
+
       fs.renameSync(req.file.path, newFilePath);
 
       const submissionData = {
@@ -307,14 +311,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const validatedData = insertSubmissionSchema.parse(submissionData);
       const submission = await storage.createSubmission(validatedData);
-      
+
       res.status(201).json(submission);
     } catch (error) {
       // Clean up uploaded file on error
       if (req.file) {
         fs.unlink(req.file.path, () => {});
       }
-      
+
       if (error instanceof Error) {
         res.status(400).json({ message: error.message });
       } else {
@@ -327,7 +331,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const { status } = req.body;
-      
+
       if (!status || !["pending", "approved", "rejected"].includes(status)) {
         return res.status(400).json({ message: "Valid status is required" });
       }
@@ -368,13 +372,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/customers", async (req, res) => {
     try {
       const validatedData = insertCustomerSchema.parse(req.body);
-      
+
       // Check if customer with this phone already exists
       const existingCustomer = await storage.getCustomerByPhone(validatedData.phone);
       if (existingCustomer) {
         return res.status(409).json({ message: "Customer with this phone number already exists" });
       }
-      
+
       const customer = await storage.createCustomer(validatedData);
       res.status(201).json(customer);
     } catch (error) {
@@ -389,14 +393,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/customers/bulk", async (req, res) => {
     try {
       const { customers } = req.body;
-      
+
       if (!Array.isArray(customers) || customers.length === 0) {
         return res.status(400).json({ message: "Customers array is required" });
       }
 
       // Validate each customer record
       const validatedCustomers = customers.map(customer => insertCustomerSchema.parse(customer));
-      
+
       const createdCustomers = await storage.createCustomersBulk(validatedCustomers);
       res.status(201).json({ 
         message: `Successfully processed ${createdCustomers.length} customers`,
@@ -415,7 +419,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const updates = insertCustomerSchema.partial().parse(req.body);
-      
+
       const customer = await storage.updateCustomer(id, updates);
       if (!customer) {
         return res.status(404).json({ message: "Customer not found" });
@@ -448,7 +452,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const campaignId = parseInt(req.params.id);
       const campaign = await storage.getCampaign(campaignId);
-      
+
       if (!campaign) {
         return res.status(404).json({ message: "Campaign not found" });
       }
@@ -540,14 +544,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const campaigns = await storage.getCampaigns();
       const submissions = await storage.getSubmissions();
       const customers = await storage.getCustomers();
-      
+
       const stats = {
         totalCampaigns: campaigns.length,
         activeCampaigns: campaigns.filter(c => c.status === "active").length,
         totalSubmissions: submissions.length,
         totalCustomers: customers.length,
       };
-      
+
       res.json(stats);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch dashboard stats" });
@@ -567,7 +571,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/email/send-campaign", async (req, res) => {
     try {
       const { campaignId, subject, recipients } = req.body;
-      
+
       if (!campaignId || !subject || !recipients || !Array.isArray(recipients)) {
         return res.status(400).json({ message: "Campaign ID, subject, and recipients are required" });
       }
@@ -604,7 +608,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/email/send-custom", async (req, res) => {
     try {
       const { subject, htmlContent, recipients } = req.body;
-      
+
       if (!subject || !htmlContent || !recipients || !Array.isArray(recipients)) {
         return res.status(400).json({ message: "Subject, content, and recipients are required" });
       }
