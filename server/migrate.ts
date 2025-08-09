@@ -1,5 +1,5 @@
 import { migrate } from "drizzle-orm/node-postgres/migrator";
-import { db } from "./db";
+import { db, pool } from "./db";
 
 export async function runMigrations() {
   try {
@@ -13,5 +13,20 @@ export async function runMigrations() {
   } catch (error) {
     console.error("❌ Migration failed:", error);
     throw error;
+  } finally {
+    await pool.end();
   }
+}
+
+// Run migrations if this file is executed directly
+if (import.meta.url === `file://${process.argv[1]}`) {
+  runMigrations()
+    .then(() => {
+      console.log("Migration process completed");
+      process.exit(0);
+    })
+    .catch((error) => {
+      console.error("Migration process failed:", error);
+      process.exit(1);
+    });
 }
