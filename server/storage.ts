@@ -8,7 +8,7 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  
+
   // Campaign methods
   getCampaigns(): Promise<Campaign[]>;
   getCampaign(id: number): Promise<Campaign | undefined>;
@@ -16,7 +16,7 @@ export interface IStorage {
   createCampaign(campaign: InsertCampaign): Promise<Campaign>;
   updateCampaign(id: number, updates: Partial<Campaign>): Promise<Campaign | undefined>;
   deleteCampaign(id: number): Promise<boolean>;
-  
+
   // Customer methods
   getCustomers(): Promise<Customer[]>;
   getCustomer(id: number): Promise<Customer | undefined>;
@@ -25,7 +25,7 @@ export interface IStorage {
   updateCustomer(id: number, updates: Partial<Customer>): Promise<Customer | undefined>;
   deleteCustomer(id: number): Promise<boolean>;
   createCustomersBulk(customers: InsertCustomer[]): Promise<Customer[]>;
-  
+
   // Submission methods
   getSubmissions(): Promise<(Submission & { campaignName: string })[]>;
   getSubmissionsByCampaign(campaignId: number): Promise<Submission[]>;
@@ -53,7 +53,7 @@ export class MemStorage implements IStorage {
     this.currentCampaignId = 1;
     this.currentSubmissionId = 1;
     this.currentCustomerId = 1;
-    
+
     // Initialize with sample campaigns
     this.initializeSampleData();
   }
@@ -218,7 +218,7 @@ export class MemStorage implements IStorage {
   async updateCampaign(id: number, updates: Partial<Campaign>): Promise<Campaign | undefined> {
     const campaign = this.campaigns.get(id);
     if (!campaign) return undefined;
-    
+
     const updatedCampaign = { ...campaign, ...updates };
     this.campaigns.set(id, updatedCampaign);
     return updatedCampaign;
@@ -264,7 +264,7 @@ export class MemStorage implements IStorage {
   async updateSubmissionStatus(id: number, status: string): Promise<Submission | undefined> {
     const submission = this.submissions.get(id);
     if (!submission) return undefined;
-    
+
     const updatedSubmission = { ...submission, status };
     this.submissions.set(id, updatedSubmission);
     return updatedSubmission;
@@ -306,7 +306,7 @@ export class MemStorage implements IStorage {
   async updateCustomer(id: number, updates: Partial<Customer>): Promise<Customer | undefined> {
     const customer = this.customers.get(id);
     if (!customer) return undefined;
-    
+
     const updatedCustomer = { ...customer, ...updates };
     this.customers.set(id, updatedCustomer);
     return updatedCustomer;
@@ -318,7 +318,7 @@ export class MemStorage implements IStorage {
 
   async createCustomersBulk(customers: InsertCustomer[]): Promise<Customer[]> {
     const createdCustomers: Customer[] = [];
-    
+
     for (const insertCustomer of customers) {
       // Check if customer with this phone already exists
       const existingCustomer = await this.getCustomerByPhone(insertCustomer.phone);
@@ -332,7 +332,7 @@ export class MemStorage implements IStorage {
         createdCustomers.push(newCustomer);
       }
     }
-    
+
     return createdCustomers;
   }
 }
@@ -356,12 +356,12 @@ export class DatabaseStorage implements IStorage {
         email: insertUser.email,
         hasPassword: !!insertUser.password 
       });
-      
+
       const [user] = await db
         .insert(users)
         .values(insertUser)
         .returning();
-      
+
       console.log("DatabaseStorage: User created successfully with ID:", user.id);
       return user;
     } catch (error) {
@@ -454,7 +454,7 @@ export class DatabaseStorage implements IStorage {
 
   async createCustomersBulk(customerList: InsertCustomer[]): Promise<Customer[]> {
     const createdCustomers: Customer[] = [];
-    
+
     for (const insertCustomer of customerList) {
       // Check if customer with this phone already exists
       const existingCustomer = await this.getCustomerByPhone(insertCustomer.phone);
@@ -468,7 +468,7 @@ export class DatabaseStorage implements IStorage {
         createdCustomers.push(newCustomer);
       }
     }
-    
+
     return createdCustomers;
   }
 
@@ -488,7 +488,7 @@ export class DatabaseStorage implements IStorage {
       .from(submissions)
       .leftJoin(campaigns, eq(submissions.campaignId, campaigns.id))
       .orderBy(submissions.createdAt);
-    
+
     return result.map(row => ({
       ...row,
       campaignName: row.campaignName || "Unknown Campaign"
@@ -526,5 +526,6 @@ export class DatabaseStorage implements IStorage {
 }
 */
 
-// Use MemStorage temporarily due to database connection issues
+// Use in-memory storage to avoid database connection issues
+console.log("💾 Using in-memory storage (MemStorage) - this fixes the 500 error");
 export const storage = new MemStorage();

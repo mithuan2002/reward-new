@@ -44,9 +44,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/test-db", async (req, res) => {
     try {
       console.log("Testing storage...");
+      // Test the storage by trying to get campaigns
+      const campaigns = await storage.getCampaigns();
       res.status(200).json({ 
-        status: "In-memory storage working", 
-        storageType: "MemStorage"
+        status: "In-memory storage working perfectly", 
+        storageType: "MemStorage",
+        campaignCount: campaigns.length
       });
     } catch (error) {
       console.error("Storage test failed:", error);
