@@ -87,11 +87,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       console.log("Checking if user exists...");
-      // Check if user already exists
-      const existingUser = await storage.getUserByUsername(username);
-      if (existingUser) {
-        console.log("User already exists:", username);
-        return res.status(409).json({ message: "Username already exists" });
+      // Check if user already exists using Node.js postgres client
+      try {
+        const postgres = (await import('postgres')).default;
+        const sql = postgres(process.env.DATABASE_URL!, { max: 1, idle_timeout: 5 });
+        const checkResult = await sql`SELECT id FROM users WHERE username = ${username}`;
+        await sql.end();
+        
+        if (checkResult.length > 0) {
+          console.log("User already exists:", username);
+          return res.status(409).json({ message: "Username already exists" });
+        }
+      } catch (dbError) {
+        console.error("Database check error:", dbError);
+        return res.status(500).json({ message: "Database error during user check" });
       }
 
       console.log("Hashing password...");
@@ -109,16 +118,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = insertUserSchema.parse(userData);
 
       console.log("Creating user in database...");
-      const user = await storage.createUser(validatedData);
-
-      console.log("User created successfully:", user.id);
-      // Remove password from response
-      const { password: _, ...userResponse } = user;
-
-      res.status(201).json({
-        message: "Account created successfully",
-        user: userResponse,
-      });
+      // Create user using Node.js postgres client
+      try {
+        const postgres = (await import('postgres')).default;
+        const sql = postgres(process.env.DATABASE_URL!, { max: 1, idle_timeout: 5 });
+        const createResult = await sql`
+          INSERT INTO users (username, email, password) 
+          VALUES (${username}, ${email}, ${hashedPassword}) 
+          RETURNING id, username, email
+        `;
+        await sql.end();
+        
+        if (createResult.length === 0) {
+          throw new Error("Failed to create user");
+        }
+        
+        const user = createResult[0];
+        console.log("User created successfully:", user.id);
+        const userResponse = { id: user.id, username: user.username, email: user.email };
+        
+        res.status(201).json({
+          message: "Account created successfully",
+          user: userResponse,
+        });
+      } catch (dbError) {
+        console.error("Database creation error:", dbError);
+        return res.status(500).json({ message: "Database error during user creation" });
+      }
     } catch (error) {
       console.error("Signup error:", error);
       if (error instanceof Error) {
@@ -139,25 +165,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Username and password are required" });
       }
 
-      // Find user
-      const user = await storage.getUserByUsername(username);
-      if (!user) {
-        return res.status(401).json({ message: "Invalid username or password" });
+      // Find user using Node.js postgres client
+      try {
+        const postgres = (await import('postgres')).default;
+        const sql = postgres(process.env.DATABASE_URL!, { max: 1, idle_timeout: 5 });
+        const userResult = await sql`SELECT id, username, email, password FROM users WHERE username = ${username}`;
+        await sql.end();
+        
+        if (userResult.length === 0) {
+          return res.status(401).json({ message: "Invalid username or password" });
+        }
+        
+        const user = userResult[0];
+        
+        // Check password
+        const isValidPassword = await bcrypt.compare(password, user.password);
+        if (!isValidPassword) {
+          return res.status(401).json({ message: "Invalid username or password" });
+        }
+
+        // Remove password from response
+        const userResponse = { id: user.id, username: user.username, email: user.email };
+
+        res.json({
+          message: "Login successful",
+          user: userResponse,
+        });
+      } catch (dbError) {
+        console.error("Database login error:", dbError);
+        return res.status(500).json({ message: "Database error during login" });
       }
-
-      // Check password
-      const isValidPassword = await bcrypt.compare(password, user.password);
-      if (!isValidPassword) {
-        return res.status(401).json({ message: "Invalid username or password" });
-      }
-
-      // Remove password from response
-      const { password: _, ...userResponse } = user;
-
-      res.json({
-        message: "Login successful",
-        user: userResponse,
-      });
     } catch (error) {
       res.status(500).json({ message: "Login failed" });
     }

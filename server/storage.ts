@@ -2,7 +2,7 @@ import { users, campaigns, submissions, customers, type User, type InsertUser, t
 import { nanoid } from "nanoid";
 // Database imports
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -344,8 +344,27 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
-    return user || undefined;
+    try {
+      console.log("DatabaseStorage: Querying user by username:", username);
+      // Use raw SQL with sql template literal
+      const result = await db.execute(sql`SELECT id, username, email, password FROM users WHERE username = ${username}`);
+      
+      console.log("DatabaseStorage: Query result:", result.length > 0 ? "User found" : "User not found");
+      
+      if (result.length > 0) {
+        const row = result[0];
+        return {
+          id: row.id as number,
+          username: row.username as string,
+          email: row.email as string,
+          password: row.password as string,
+        };
+      }
+      return undefined;
+    } catch (error) {
+      console.error("DatabaseStorage: Error querying user by username:", error);
+      throw error;
+    }
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
@@ -356,13 +375,22 @@ export class DatabaseStorage implements IStorage {
         hasPassword: !!insertUser.password
       });
 
-      const [user] = await db
-        .insert(users)
-        .values(insertUser)
-        .returning();
+      // Use raw SQL with sql template literal
+      const result = await db.execute(sql`INSERT INTO users (username, email, password) VALUES (${insertUser.username}, ${insertUser.email}, ${insertUser.password}) RETURNING id, username, email, password`);
 
-      console.log("DatabaseStorage: User created successfully with ID:", user.id);
-      return user;
+      if (result.length > 0) {
+        const row = result[0];
+        const user = {
+          id: row.id as number,
+          username: row.username as string,
+          email: row.email as string,
+          password: row.password as string,
+        };
+        console.log("DatabaseStorage: User created successfully with ID:", user.id);
+        return user;
+      }
+      
+      throw new Error("Failed to create user");
     } catch (error) {
       console.error("DatabaseStorage: Error creating user:", error);
       throw error;
