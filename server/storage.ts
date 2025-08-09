@@ -408,7 +408,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteCampaign(id: number): Promise<boolean> {
     const result = await db.delete(campaigns).where(eq(campaigns.id, id));
-    return (result.rowCount || 0) > 0;
+    return (result.count || 0) > 0;
   }
 
   // Customer methods
@@ -448,7 +448,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteCustomer(id: number): Promise<boolean> {
     const result = await db.delete(customers).where(eq(customers.id, id));
-    return (result.rowCount || 0) > 0;
+    return (result.count || 0) > 0;
   }
 
   async createCustomersBulk(customerList: InsertCustomer[]): Promise<Customer[]> {
@@ -520,7 +520,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteSubmission(id: number): Promise<boolean> {
     const result = await db.delete(submissions).where(eq(submissions.id, id));
-    return (result.rowCount || 0) > 0;
+    return (result.count || 0) > 0;
   }
 }
 

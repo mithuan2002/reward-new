@@ -1,15 +1,15 @@
 
-import Database from 'better-sqlite3';
-import { drizzle } from 'drizzle-orm/better-sqlite3';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
 import * as schema from "@shared/schema";
-import path from 'path';
 
-// Create SQLite database file
-const dbPath = path.join(process.cwd(), 'database.sqlite');
-const sqlite = new Database(dbPath);
+// Use PostgreSQL database with connection from environment variables
+const connectionString = process.env.DATABASE_URL!;
 
-console.log("✅ Using SQLite database at:", dbPath);
+console.log("✅ Using PostgreSQL database");
 
-const db = drizzle(sqlite, { schema });
+// Create the connection
+const client = postgres(connectionString, { max: 1 });
+const db = drizzle(client, { schema });
 
-export { db, sqlite as pool };
+export { db, client as pool };

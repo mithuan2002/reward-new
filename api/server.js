@@ -1,26 +1,21 @@
 const express = require('express');
 const path = require('path');
 const bcrypt = require('bcrypt');
+const { Pool } = require('pg');
 
-// Create express app
-const app = express();
+// Create express router instead of app
+const router = express.Router();
 
-// Basic middleware
-app.use(express.json());
-app.use(express.static(path.join(__dirname, '../dist/public')));
-
-// Handle CORS for Vercel
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-
-  if (req.method === 'OPTIONS') {
-    res.sendStatus(200);
-  } else {
-    next();
-  }
-});
+// Database connection for Vercel
+let db;
+if (process.env.DATABASE_URL) {
+  db = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  });
+} else {
+  console.warn('No DATABASE_URL provided, using in-memory storage');
+}
 
 // Sample data for demo
 const campaigns = [
@@ -42,21 +37,21 @@ const customers = [];
 const users = []; // In-memory users storage for demo
 
 // Health check endpoint
-app.get('/health', (req, res) => {
+router.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
 // Test DB endpoint
-app.get('/api/test-db', (req, res) => {
+router.get('/api/test-db', (req, res) => {
   res.status(200).json({
-    status: 'In-memory storage working perfectly',
-    storageType: 'MemStorage',
+    status: 'Database connection working',
+    storageType: db ? 'PostgreSQL' : 'MemStorage',
     campaignCount: campaigns.length
   });
 });
 
-// Authentication routes
-app.post('/api/auth/signup', async (req, res) => {
+// Authentication routes with proper database support
+router.post('/api/auth/signup', async (req, res) => {
   try {
     console.log('Signup request received:', { body: req.body });
 
@@ -74,7 +69,14 @@ app.post('/api/auth/signup', async (req, res) => {
 
     console.log('Checking if user exists...');
     // Check if user already exists
-    const existingUser = users.find(user => user.username === username);
+    let existingUser;
+    if (db) {
+      const result = await db.query('SELECT * FROM users WHERE username = $1', [username]);
+      existingUser = result.rows[0];
+    } else {
+      existingUser = users.find(user => user.username === username);
+    }
+    
     if (existingUser) {
       console.log('User already exists:', username);
       return res.status(409).json({ message: 'Username already exists' });
@@ -85,16 +87,24 @@ app.post('/api/auth/signup', async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create user
-    const user = {
-      id: users.length + 1,
-      username,
-      email,
-      password: hashedPassword,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-
-    users.push(user);
+    let user;
+    if (db) {
+      const result = await db.query(
+        'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING *',
+        [username, email, hashedPassword]
+      );
+      user = result.rows[0];
+    } else {
+      user = {
+        id: users.length + 1,
+        username,
+        email,
+        password: hashedPassword,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      users.push(user);
+    }
 
     console.log('User created successfully:', user.id);
     // Remove password from response
@@ -116,7 +126,7 @@ app.post('/api/auth/signup', async (req, res) => {
   }
 });
 
-app.post('/api/auth/login', async (req, res) => {
+router.post('/api/auth/login', async (req, res) => {
   try {
     const { username, password } = req.body;
 
@@ -125,7 +135,14 @@ app.post('/api/auth/login', async (req, res) => {
     }
 
     // Find user
-    const user = users.find(user => user.username === username);
+    let user;
+    if (db) {
+      const result = await db.query('SELECT * FROM users WHERE username = $1', [username]);
+      user = result.rows[0];
+    } else {
+      user = users.find(user => user.username === username);
+    }
+    
     if (!user) {
       return res.status(401).json({ message: 'Invalid username or password' });
     }
@@ -149,16 +166,16 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-app.post('/api/auth/logout', async (req, res) => {
+router.post('/api/auth/logout', async (req, res) => {
   res.json({ message: 'Logout successful' });
 });
 
 // Campaign routes
-app.get('/api/campaigns', (req, res) => {
+router.get('/api/campaigns', (req, res) => {
   res.json(campaigns);
 });
 
-app.get('/api/campaigns/:id', (req, res) => {
+router.get('/api/campaigns/:id', (req, res) => {
   const id = parseInt(req.params.id);
   const campaign = campaigns.find(c => c.id === id);
   if (!campaign) {
@@ -167,7 +184,7 @@ app.get('/api/campaigns/:id', (req, res) => {
   res.json(campaign);
 });
 
-app.get('/api/campaigns/url/:uniqueUrl', (req, res) => {
+router.get('/api/campaigns/url/:uniqueUrl', (req, res) => {
   const { uniqueUrl } = req.params;
   const campaign = campaigns.find(c => c.uniqueUrl === uniqueUrl);
   if (!campaign) {
@@ -176,7 +193,7 @@ app.get('/api/campaigns/url/:uniqueUrl', (req, res) => {
   res.json(campaign);
 });
 
-app.post('/api/campaigns', (req, res) => {
+router.post('/api/campaigns', (req, res) => {
   const newCampaign = {
     id: campaigns.length + 1,
     ...req.body,
@@ -188,7 +205,7 @@ app.post('/api/campaigns', (req, res) => {
   res.status(201).json(newCampaign);
 });
 
-app.patch('/api/campaigns/:id', (req, res) => {
+router.patch('/api/campaigns/:id', (req, res) => {
   const id = parseInt(req.params.id);
   const campaignIndex = campaigns.findIndex(c => c.id === id);
   if (campaignIndex === -1) {
@@ -204,7 +221,7 @@ app.patch('/api/campaigns/:id', (req, res) => {
   res.json(campaigns[campaignIndex]);
 });
 
-app.delete('/api/campaigns/:id', (req, res) => {
+router.delete('/api/campaigns/:id', (req, res) => {
   const id = parseInt(req.params.id);
   const campaignIndex = campaigns.findIndex(c => c.id === id);
   if (campaignIndex === -1) {
@@ -216,7 +233,7 @@ app.delete('/api/campaigns/:id', (req, res) => {
 });
 
 // Submission routes
-app.get('/api/submissions', (req, res) => {
+router.get('/api/submissions', (req, res) => {
   const { campaignId } = req.query;
   let filteredSubmissions = submissions;
 
@@ -235,7 +252,7 @@ app.get('/api/submissions', (req, res) => {
   res.json(filteredSubmissions);
 });
 
-app.post('/api/submissions', (req, res) => {
+router.post('/api/submissions', (req, res) => {
   const newSubmission = {
     id: submissions.length + 1,
     ...req.body,
@@ -247,7 +264,7 @@ app.post('/api/submissions', (req, res) => {
   res.status(201).json(newSubmission);
 });
 
-app.patch('/api/submissions/:id/status', (req, res) => {
+router.patch('/api/submissions/:id/status', (req, res) => {
   const id = parseInt(req.params.id);
   const { status } = req.body;
 
@@ -269,7 +286,7 @@ app.patch('/api/submissions/:id/status', (req, res) => {
   res.json(submissions[submissionIndex]);
 });
 
-app.delete('/api/submissions/:id', (req, res) => {
+router.delete('/api/submissions/:id', (req, res) => {
   const id = parseInt(req.params.id);
   const submissionIndex = submissions.findIndex(s => s.id === id);
   if (submissionIndex === -1) {
@@ -281,11 +298,11 @@ app.delete('/api/submissions/:id', (req, res) => {
 });
 
 // Customer routes
-app.get('/api/customers', (req, res) => {
+router.get('/api/customers', (req, res) => {
   res.json(customers);
 });
 
-app.post('/api/customers', (req, res) => {
+router.post('/api/customers', (req, res) => {
   // Check if customer with this phone already exists
   const existingCustomer = customers.find(c => c.phone === req.body.phone);
   if (existingCustomer) {
@@ -302,7 +319,7 @@ app.post('/api/customers', (req, res) => {
   res.status(201).json(newCustomer);
 });
 
-app.post('/api/customers/bulk', (req, res) => {
+router.post('/api/customers/bulk', (req, res) => {
   const { customers: newCustomers } = req.body;
 
   if (!Array.isArray(newCustomers) || newCustomers.length === 0) {
@@ -330,7 +347,7 @@ app.post('/api/customers/bulk', (req, res) => {
   });
 });
 
-app.put('/api/customers/:id', (req, res) => {
+router.put('/api/customers/:id', (req, res) => {
   const id = parseInt(req.params.id);
   const customerIndex = customers.findIndex(c => c.id === id);
   if (customerIndex === -1) {
@@ -346,7 +363,7 @@ app.put('/api/customers/:id', (req, res) => {
   res.json(customers[customerIndex]);
 });
 
-app.delete('/api/customers/:id', (req, res) => {
+router.delete('/api/customers/:id', (req, res) => {
   const id = parseInt(req.params.id);
   const customerIndex = customers.findIndex(c => c.id === id);
   if (customerIndex === -1) {
@@ -358,7 +375,7 @@ app.delete('/api/customers/:id', (req, res) => {
 });
 
 // Dashboard stats
-app.get('/api/dashboard/stats', (req, res) => {
+router.get('/api/dashboard/stats', (req, res) => {
   const stats = {
     totalCampaigns: campaigns.length,
     activeCampaigns: campaigns.filter(c => c.status === 'active').length,
@@ -370,7 +387,7 @@ app.get('/api/dashboard/stats', (req, res) => {
 });
 
 // Widget generation
-app.get('/api/campaigns/:id/widget', (req, res) => {
+router.get('/api/campaigns/:id/widget', (req, res) => {
   const campaignId = parseInt(req.params.id);
   const campaign = campaigns.find(c => c.id === campaignId);
 
@@ -452,8 +469,8 @@ app.get('/api/campaigns/:id/widget', (req, res) => {
 });
 
 // Fallback to serve index.html for SPA routes
-app.get('*', (req, res) => {
+router.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../dist/public/index.html'));
 });
 
-module.exports = app;
+module.exports = router;
