@@ -87,14 +87,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       console.log("Checking if user exists...");
-      // Check if user already exists using Node.js postgres client
+      // Check if user already exists using storage
       try {
-        const postgres = (await import('postgres')).default;
-        const sql = postgres(process.env.DATABASE_URL!, { max: 1, idle_timeout: 5 });
-        const checkResult = await sql`SELECT id FROM users WHERE username = ${username}`;
-        await sql.end();
-        
-        if (checkResult.length > 0) {
+        const existingUser = await storage.getUserByUsername(username);
+        if (existingUser) {
           console.log("User already exists:", username);
           return res.status(409).json({ message: "Username already exists" });
         }
@@ -118,22 +114,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = insertUserSchema.parse(userData);
 
       console.log("Creating user in database...");
-      // Create user using Node.js postgres client
+      // Create user using storage
       try {
-        const postgres = (await import('postgres')).default;
-        const sql = postgres(process.env.DATABASE_URL!, { max: 1, idle_timeout: 5 });
-        const createResult = await sql`
-          INSERT INTO users (username, email, password) 
-          VALUES (${username}, ${email}, ${hashedPassword}) 
-          RETURNING id, username, email
-        `;
-        await sql.end();
-        
-        if (createResult.length === 0) {
-          throw new Error("Failed to create user");
-        }
-        
-        const user = createResult[0];
+        const user = await storage.createUser(validatedData);
         console.log("User created successfully:", user.id);
         const userResponse = { id: user.id, username: user.username, email: user.email };
         
@@ -165,18 +148,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Username and password are required" });
       }
 
-      // Find user using Node.js postgres client
+      // Find user using storage
       try {
-        const postgres = (await import('postgres')).default;
-        const sql = postgres(process.env.DATABASE_URL!, { max: 1, idle_timeout: 5 });
-        const userResult = await sql`SELECT id, username, email, password FROM users WHERE username = ${username}`;
-        await sql.end();
+        const user = await storage.getUserByUsername(username);
         
-        if (userResult.length === 0) {
+        if (!user) {
           return res.status(401).json({ message: "Invalid username or password" });
         }
-        
-        const user = userResult[0];
         
         // Check password
         const isValidPassword = await bcrypt.compare(password, user.password);

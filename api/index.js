@@ -17,6 +17,8 @@ async function initDb() {
       max: 1,
       idle_timeout: 20,
       max_lifetime: 60 * 30,
+      transform: postgres.camel,
+      prepare: false,
     });
   }
   return sql;
