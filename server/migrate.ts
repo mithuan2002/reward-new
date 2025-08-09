@@ -1,5 +1,5 @@
 
-import { migrate } from "drizzle-orm/better-sqlite3/migrator";
+import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { db, pool } from "./db";
 
 export async function runMigrations() {
@@ -15,7 +15,7 @@ export async function runMigrations() {
     console.error("❌ Migration failed:", error);
     throw error;
   } finally {
-    pool.close();
+    // Don't close pool since it might be used elsewhere
   }
 }
 
