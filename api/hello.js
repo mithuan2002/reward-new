@@ -1,5 +1,5 @@
-// Ultra-simple test endpoint
-export default function handler(req, res) {
+// Ultra-simple test endpoint with CommonJS
+module.exports = (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   
@@ -13,4 +13,4 @@ export default function handler(req, res) {
     method: req.method,
     url: req.url
   });
-}
+};

@@ -31,6 +31,10 @@
       "dest": "/api/test.js"
     },
     {
+      "src": "/api/signup",
+      "dest": "/api/signup.js"
+    },
+    {
       "src": "/api/auth/signup",
       "dest": "/api/auth.js?action=signup"
     },
