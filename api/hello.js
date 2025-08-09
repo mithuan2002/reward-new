@@ -1,5 +1,5 @@
-// Ultra-simple test endpoint with CommonJS
-module.exports = (req, res) => {
+// Simple test endpoint using Vercel's default structure
+export default function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   
@@ -11,6 +11,8 @@ module.exports = (req, res) => {
     message: 'Hello from Vercel!',
     timestamp: new Date().toISOString(),
     method: req.method,
-    url: req.url
+    url: req.url,
+    nodeVersion: process.version,
+    environment: process.env.NODE_ENV || 'unknown'
   });
-};
+}
